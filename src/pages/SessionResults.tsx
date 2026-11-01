@@ -4,6 +4,7 @@ import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import { getPupilAttempts, getResults, saveComment } from '../lib/api';
 import { summarizeItem, summarizeSession, type ItemSummary } from '../lib/progress';
+import { upsertComment } from '../lib/comments';
 import type { AttemptRow } from '../lib/types';
 
 type Results = Awaited<ReturnType<typeof getResults>>;
@@ -51,6 +52,7 @@ export default function SessionResults() {
     if (!pupilId) return;
     try {
       await saveComment(sessionId, { pupilId, body, visible });
+      setData(d => (d ? { ...d, comments: upsertComment(d.comments, { pupilId, body, visible }) } : d));
       setSaved('Commentaire enregistré.');
     } catch (e) {
       setSaved((e as Error).message);

@@ -21,7 +21,6 @@ export function toAttemptRow(r: any): AttemptRow {
 export function toOpenedSession(raw: any): OpenedSession {
   return {
     sessionId: raw.session_id,
-    title: raw.title,
     mode: raw.mode,
     options: {
       showCorrect: raw.options.show_correct,

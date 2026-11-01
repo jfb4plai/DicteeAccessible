@@ -17,7 +17,6 @@ export type SessionOptions = { showCorrect: boolean; readAloud: boolean; finalRo
 
 export type OpenedSession = {
   sessionId: string;
-  title: string;
   mode: 'autonomy' | 'class';
   options: SessionOptions;
   items: DictaItem[];
@@ -45,5 +44,9 @@ export type SessionListItem = {
   pupilCount: number;
   createdAt: string;
 };
+
+export type SaveJob =
+  | { kind: 'attempt'; itemId: string; stage: Stage; answer: string; listens: number; screenshot: string | null }
+  | { kind: 'help'; itemId: string; stage: Stage };
 
 export type CommentRow = { pupilId: string; body: string; visible: boolean };

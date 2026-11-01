@@ -47,13 +47,18 @@ begin
 
   -- 3. codes en minuscules et avec espaces
   r := dicta_open_session(' testaa ', 'e1');
-  if r->>'title' <> 'Test' then raise exception 'ouverture avec codes normalisés échouée'; end if;
+  if r->>'session_id' is null or r ? 'title' then raise exception 'ouverture : session_id attendu, title interdit'; end if;
 
   -- 4. réponse fausse puis juste (majuscules acceptées)
   r := dicta_record_attempt('TESTAA', 'E1', '00000000-0000-0000-0000-0000000000d1', 'A', 'chta', 2, null);
   if (r->>'correct')::boolean is not false or (r->>'attempt_number')::int <> 1 then raise exception 'essai 1 attendu faux/1, reçu %', r; end if;
   r := dicta_record_attempt('TESTAA', 'E1', '00000000-0000-0000-0000-0000000000d1', 'A', 'CHAT', 1, null);
   if (r->>'correct')::boolean is not true or (r->>'attempt_number')::int <> 2 then raise exception 'essai 2 attendu juste/2, reçu %', r; end if;
+
+  -- 4 bis. une capture qui n'est pas un JPEG en data: est ignorée
+  perform dicta_record_attempt('TESTAA', 'E1', '00000000-0000-0000-0000-0000000000d1', 'C', 'chta', 0, 'https://exemple.org/p.png');
+  if exists (select 1 from dicta_attempts where screenshot like 'https:%') then raise exception 'capture externe acceptée'; end if;
+  delete from dicta_attempts where stage = 'C';
 
   -- 5. aide
   perform dicta_record_help('TESTAA', 'E1', '00000000-0000-0000-0000-0000000000d1', 'A');

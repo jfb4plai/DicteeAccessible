@@ -6,10 +6,11 @@ type Props = {
   onUnplace: (slot: number) => void;
   onValidate: () => void;
   onRetry: () => void;
+  neutral?: boolean; // dernier tour : aucune indication de position, un seul essai
 };
 
 // Cases du mot (zone capturée en cas d'erreur) + lettres à placer. Cibles de 56 px minimum.
-export default function LetterBoard({ state, onPlace, onUnplace, onValidate, onRetry }: Props) {
+export default function LetterBoard({ state, onPlace, onUnplace, onValidate, onRetry, neutral }: Props) {
   const locked = state.phase === 'right' || state.phase === 'wrong';
 
   return (
@@ -17,7 +18,7 @@ export default function LetterBoard({ state, onPlace, onUnplace, onValidate, onR
       <div id="word-area" className="flex flex-wrap justify-center gap-2 p-4 bg-white rounded-lg" aria-label="Mot à écrire">
         {state.placed.map((letter, slot) => {
           const prefilled = state.prefilled.includes(slot);
-          const wrong = state.phase === 'wrong' && state.wrongIdx.includes(slot);
+          const wrong = !neutral && state.phase === 'wrong' && state.wrongIdx.includes(slot);
           const right = state.phase === 'right';
           const color = wrong ? '#dc2626' : right ? '#16a34a' : '#1a1814';
           return (
@@ -58,7 +59,8 @@ export default function LetterBoard({ state, onPlace, onUnplace, onValidate, onR
           <button type="button" className="plai-btn" onClick={onValidate}>Valider le mot</button>
         )}
         {state.phase === 'right' && <p className="text-xl" style={{ color: '#166534' }}>Bravo, le mot est juste.</p>}
-        {state.phase === 'wrong' && (
+        {state.phase === 'wrong' && neutral && <p className="text-xl">Réponse enregistrée.</p>}
+        {state.phase === 'wrong' && !neutral && (
           <div>
             <p className="text-xl mb-2" style={{ color: '#b91c1c' }}>Ce n'est pas encore juste. Réessayer.</p>
             <button type="button" className="plai-btn-ghost" onClick={onRetry}>Réessayer maintenant</button>

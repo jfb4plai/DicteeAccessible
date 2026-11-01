@@ -114,7 +114,7 @@ create policy "dicta_comments propriétaire" on dicta_comments
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- Grants Data API (le GRANT ouvre au niveau rôle, la RLS filtre les lignes).
-revoke all on dicta_pupils, dicta_sessions, dicta_items, dicta_session_pupils, dicta_attempts, dicta_comments from anon;
+revoke all on dicta_pupils, dicta_sessions, dicta_items, dicta_session_pupils, dicta_attempts, dicta_comments from anon, authenticated;
 grant select, insert, update, delete on dicta_pupils, dicta_sessions, dicta_items, dicta_session_pupils, dicta_comments to authenticated;
 grant select on dicta_attempts to authenticated;
 grant select, insert, update, delete on dicta_pupils, dicta_sessions, dicta_items, dicta_session_pupils, dicta_attempts, dicta_comments to service_role;
@@ -154,7 +154,6 @@ begin
 
   return jsonb_build_object(
     'session_id', sess.id,
-    'title', sess.title,
     'mode', sess.mode,
     'options', jsonb_build_object(
       'show_correct', sess.show_correct,
@@ -203,6 +202,10 @@ begin
     raise exception 'invalid_stage';
   end if;
 
+  if (select count(*) from dicta_attempts where session_id = r.session_id and pupil_id = r.pupil_id) >= 1000 then
+    raise exception 'limit_reached';
+  end if;
+
   ok := lower(normalize(coalesce(p_answer, ''), NFC)) = lower(normalize(it.word, NFC));
 
   select count(*) + 1 into n
@@ -215,7 +218,7 @@ begin
     r.user_id, r.session_id, r.pupil_id, p_item_id, p_stage, 'attempt', n,
     left(coalesce(p_answer, ''), 200), ok,
     greatest(0, least(coalesce(p_listens, 0), 100)),
-    case when length(p_screenshot) <= 300000 then p_screenshot else null end
+    case when p_screenshot like 'data:image/jpeg;base64,%' and length(p_screenshot) <= 200000 then p_screenshot else null end
   );
 
   return jsonb_build_object('correct', ok, 'attempt_number', n);

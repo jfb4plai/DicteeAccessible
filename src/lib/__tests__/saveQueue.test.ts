@@ -41,3 +41,29 @@ describe('createSaveQueue', () => {
     expect(q.pending()).toBe(0);
   });
 });
+
+describe('createSaveQueue mémorisée', () => {
+  it('écrit la file en stockage avant envoi', () => {
+    let stored: string[] = [];
+    const q = createSaveQueue<string>({
+      send: () => new Promise<void>(() => {}),
+      schedule: () => {},
+      storage: { load: () => stored, save: jobs => { stored = jobs; } },
+    });
+    q.enqueue('a');
+    expect(stored).toEqual(['a']);
+  });
+
+  it('reprend au démarrage les envois mémorisés', async () => {
+    let stored: string[] = ['a', 'b'];
+    const sent: string[] = [];
+    createSaveQueue<string>({
+      send: async job => { sent.push(job); },
+      schedule: () => {},
+      storage: { load: () => stored, save: jobs => { stored = jobs; } },
+    });
+    await tick();
+    expect(sent).toEqual(['a', 'b']);
+    expect(stored).toEqual([]);
+  });
+});

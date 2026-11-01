@@ -52,13 +52,15 @@ export default function WordExercise(p: Props) {
     const correct = state.phase === 'right';
     const heard = listens.current;
     listens.current = 0;
-    const shot = correct ? Promise.resolve(null) : captureWordArea();
+    // Pas de capture au dernier tour : l'enregistrement doit précéder le passage au mot suivant.
+    const shot = correct || p.stage === 'C' ? Promise.resolve(null) : captureWordArea();
     void shot.then(screenshot => p.onAttempt({ answer, correct, listens: heard, screenshot }));
   }, [state.phase, state.attemptCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (state.phase === 'wrong') {
-      const t = setTimeout(() => dispatch({ type: 'retry' }), RETRY_DELAY_MS);
+      // Dernier tour : le mot est enregistré tel quel, on passe au suivant sans second essai.
+      const t = setTimeout(() => (p.stage === 'C' ? p.onNext() : dispatch({ type: 'retry' })), RETRY_DELAY_MS);
       return () => clearTimeout(t);
     }
     if (state.phase === 'right') {
@@ -102,9 +104,10 @@ export default function WordExercise(p: Props) {
         onUnplace={slot => dispatch({ type: 'unplace', slot })}
         onValidate={() => dispatch({ type: 'validate' })}
         onRetry={() => dispatch({ type: 'retry' })}
+        neutral={p.stage === 'C'}
       />
 
-      {state.phase === 'right' && (
+      {(state.phase === 'right' || (state.phase === 'wrong' && p.stage === 'C')) && (
         <div className="text-center mt-4">
           <button type="button" className="plai-btn" onClick={p.onNext}>Mot suivant</button>
         </div>

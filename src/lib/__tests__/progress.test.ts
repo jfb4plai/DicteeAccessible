@@ -104,3 +104,20 @@ describe('nextTask', () => {
     expect(nextTask(items, rows, true)).toEqual({ stage: 'C', item: items[0] });
   });
 });
+
+describe('dernier tour : un seul essai par mot', () => {
+  it('un premier essai faux en C termine le mot', () => {
+    const rows = [att('i1', 'A', 1, true), att('i2', 'A', 1, false), att('i2', 'A', 2, true), att('i3', 'A', 1, true), att('i2', 'C', 1, false)];
+    expect(nextTask(items, rows, true)).toBeNull();
+  });
+});
+
+describe('captures', () => {
+  it('ne garde que les images en data:image', () => {
+    const rows = [
+      att('i1', 'A', 1, false, { screenshot: 'https://exemple.org/p.png' }),
+      att('i1', 'A', 2, true, { screenshot: 'data:image/jpeg;base64,xx' }),
+    ];
+    expect(summarizeItem(items[0], rows, true).screenshots).toEqual(['data:image/jpeg;base64,xx']);
+  });
+});

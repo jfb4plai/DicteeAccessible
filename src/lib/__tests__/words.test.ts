@@ -20,3 +20,9 @@ describe('parseWordList', () => {
     expect(parseWordList('')).toEqual({ words: [], duplicates: [] });
   });
 });
+
+describe('parseWordList normalisation', () => {
+  it('stocke les mots en forme composée (NFC)', () => {
+    expect(parseWordList('été').words).toEqual(['été']);
+  });
+});

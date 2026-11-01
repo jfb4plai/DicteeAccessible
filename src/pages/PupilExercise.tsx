@@ -3,14 +3,23 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import WordExercise, { type AttemptResult } from '../components/WordExercise';
 import { openSession, recordAttempt, recordHelp } from '../lib/api';
+import { normalizeCode } from '../lib/apiMapping';
+import { applyPendingJobs } from '../lib/pendingRows';
 import { nextTask } from '../lib/progress';
 import { createSaveQueue } from '../lib/saveQueue';
 import { shuffleArray } from '../lib/utils';
-import type { AttemptRow, DictaItem, OpenedSession, Stage } from '../lib/types';
+import type { AttemptRow, DictaItem, OpenedSession, SaveJob as Job } from '../lib/types';
 
-type Job =
-  | { kind: 'attempt'; itemId: string; stage: Stage; answer: string; listens: number; screenshot: string | null }
-  | { kind: 'help'; itemId: string; stage: Stage };
+// Envois pas encore partis, gardés dans le navigateur : ils survivent à la fermeture de l'onglet.
+function jobStorage(accessCode: string, pupilCode: string) {
+  const key = `dicta-file:${normalizeCode(accessCode)}:${normalizeCode(pupilCode)}`;
+  return {
+    load: (): Job[] => {
+      try { return JSON.parse(localStorage.getItem(key) ?? '[]') as Job[]; } catch { return []; }
+    },
+    save: (jobs: Job[]) => localStorage.setItem(key, JSON.stringify(jobs)),
+  };
+}
 
 type Task = { stage: 'A' | 'C'; item: DictaItem };
 
@@ -31,21 +40,28 @@ export default function PupilExercise() {
   // Ouverture de la dictée. Les lignes déjà enregistrées décident de la suite (reprise après rechargement).
   useEffect(() => {
     if (!accessCode || !pupilCode) { navigate('/eleve'); return; }
-    queueRef.current = createSaveQueue<Job>({
-      send: job => job.kind === 'help'
-        ? recordHelp({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage })
-        : recordAttempt({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage, answer: job.answer, listens: job.listens, screenshot: job.screenshot }).then(() => undefined),
-      onChange: setPending,
-    });
+    const storage = jobStorage(accessCode, pupilCode);
+    let cancelled = false; // évite deux files sur la même mémoire (double montage)
     openSession(accessCode, pupilCode)
       .then(s => {
+        if (cancelled) return;
         const shuffled = shuffleArray(s.items);
-        rowsRef.current = s.attempts;
+        // Les lignes du serveur ne contiennent pas encore les envois en attente : on les ajoute avant de choisir la suite.
+        const rows = applyPendingJobs(s.attempts, storage.load(), shuffled);
+        queueRef.current = createSaveQueue<Job>({
+          send: job => job.kind === 'help'
+            ? recordHelp({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage })
+            : recordAttempt({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage, answer: job.answer, listens: job.listens, screenshot: job.screenshot }).then(() => undefined),
+          onChange: setPending,
+          storage,
+        });
+        rowsRef.current = rows;
         setOpened(s);
         setItems(shuffled);
-        setCurrent(nextTask(shuffled, s.attempts, s.options.finalRound));
+        setCurrent(nextTask(shuffled, rows, s.options.finalRound));
       })
-      .catch((e: Error) => setError(e.message));
+      .catch((e: Error) => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
   }, [accessCode, pupilCode, navigate]);
 
   useEffect(() => {
@@ -114,7 +130,6 @@ export default function PupilExercise() {
   return (
     <PageShell>
       {pendingBanner}
-      <h1 className="text-2xl mb-3">{opened.title}</h1>
       <WordExercise
         key={`${current.stage}:${current.item.id}`}
         word={current.item.word}

@@ -36,7 +36,7 @@ export function summarizeItem(item: DictaItem, allRows: AttemptRow[], finalRound
     attemptsA: attemptsA.length,
     listens: rows.reduce((sum, r) => sum + (r.listens ?? 0), 0),
     helpUsed,
-    screenshots: rows.map(r => r.screenshot).filter((s): s is string => !!s),
+    screenshots: rows.map(r => r.screenshot).filter((s): s is string => !!s && s.startsWith('data:image/')),
   };
 
   if (rows.length === 0) return { ...base, status: 'grey', label: 'non fait' };
@@ -74,7 +74,7 @@ export function nextTask(
   if (!finalRound) return null;
   const todoC = items.find(item => {
     const own = rowsOf(item);
-    return !isFirstTry(own) && !attemptsAt(own, 'C').some(r => r.correct === true);
+    return !isFirstTry(own) && attemptsAt(own, 'C').length === 0; // dernier tour : un seul essai par mot
   });
   return todoC ? { stage: 'C', item: todoC } : null;
 }

@@ -5,7 +5,6 @@ describe('toOpenedSession', () => {
   it('convertit le JSON de dicta_open_session en objets camelCase', () => {
     const raw = {
       session_id: 's1',
-      title: 'Dictée du 16/11',
       mode: 'class',
       options: { show_correct: false, read_aloud: true, final_round: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
@@ -13,7 +12,6 @@ describe('toOpenedSession', () => {
     };
     expect(toOpenedSession(raw)).toEqual({
       sessionId: 's1',
-      title: 'Dictée du 16/11',
       mode: 'class',
       options: { showCorrect: false, readAloud: true, finalRound: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
@@ -21,9 +19,14 @@ describe('toOpenedSession', () => {
     });
   });
 
+  it('ne transporte pas le titre de la dictée vers l élève', () => {
+    const raw = { session_id: 's1', title: 'Dictée de Léa', mode: 'class', options: { show_correct: false, read_aloud: true, final_round: true }, items: [], attempts: [] };
+    expect(Object.keys(toOpenedSession(raw))).not.toContain('title');
+  });
+
   it('trie les mots par position', () => {
     const raw = {
-      session_id: 's1', title: 't', mode: 'autonomy',
+      session_id: 's1', mode: 'autonomy',
       options: { show_correct: true, read_aloud: true, final_round: true },
       items: [{ id: 'b', word: 'b', position: 1 }, { id: 'a', word: 'a', position: 0 }],
       attempts: [],

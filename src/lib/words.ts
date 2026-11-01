@@ -8,7 +8,7 @@ export function parseWordList(raw: string): { words: string[]; duplicates: strin
   const seen = new Set<string>();
 
   for (const part of raw.split(SEPARATORS)) {
-    const word = part.trim();
+    const word = part.trim().normalize('NFC'); // forme composée : une lettre accentuée = un caractère
     if (!word) continue;
     const key = word.normalize('NFC').toLowerCase();
     if (seen.has(key)) {
