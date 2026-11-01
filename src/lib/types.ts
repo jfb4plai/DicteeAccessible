@@ -2,6 +2,8 @@ export type Stage = 'A' | 'B1' | 'B2' | 'C';
 
 export type DictaItem = { id: string; word: string; position: number };
 
+export type DictaSentence = { id: string; position: number; text: string; parasites: string[]; itemId: string | null };
+
 export type AttemptRow = {
   itemId: string;
   stage: Stage;
