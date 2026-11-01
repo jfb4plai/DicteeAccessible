@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   tokenizeSentence, stripPunctuation, containsWord, filterParasites, isCorrectSentenceAnswer,
-  buildSentenceTiles, sentenceUnlocked, maxWords, sentenceTooLong,
+  buildSentenceTiles, sentenceUnlocked, maxWords, sentenceTooLong, sentenceForStage,
 } from '../sentences';
 import type { AttemptRow, DictaItem, DictaSentence } from '../types';
 
@@ -95,5 +95,15 @@ describe('longueur', () => {
   it('sentenceTooLong', () => {
     expect(sentenceTooLong('Le vent a soufflé très fort sur la colline hier soir.', 'P1')).toBe(true);
     expect(sentenceTooLong('Le vent a soufflé fort.', 'P1')).toBe(false);
+  });
+});
+
+describe('sentenceForStage', () => {
+  const s = { text: 'Le chat dort.', parasites: ['dormir', 'dormez'] };
+  it('B1 : aucun parasite, la phrase est visible et il ne s\'agit que de l\'ordonner', () => {
+    expect(sentenceForStage(s, 'B1').parasites).toEqual([]);
+  });
+  it('B2 : les parasites sont mêlés aux tuiles', () => {
+    expect(sentenceForStage(s, 'B2').parasites).toEqual(['dormir', 'dormez']);
   });
 });

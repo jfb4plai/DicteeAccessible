@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import WordExercise, { type AttemptResult } from '../components/WordExercise';
+import SentenceExercise, { type SentenceAttemptResult } from '../components/SentenceExercise';
 import { openSession, recordAttempt, recordHelp, recordSentenceAttempt } from '../lib/api';
 import { normalizeCode } from '../lib/apiMapping';
 import { applyPendingJobs } from '../lib/pendingRows';
-import { nextTask } from '../lib/progress';
+import { nextStep, type Step } from '../lib/progress';
 import { createSaveQueue } from '../lib/saveQueue';
 import { shuffleArray } from '../lib/utils';
-import type { AttemptRow, DictaItem, OpenedSession, SaveJob as Job } from '../lib/types';
+import type { AttemptRow, DictaItem, DictaSentence, OpenedSession, SaveJob as Job } from '../lib/types';
 
 // Envois pas encore partis, gardés dans le navigateur : ils survivent à la fermeture de l'onglet.
 function jobStorage(accessCode: string, pupilCode: string) {
@@ -21,8 +22,6 @@ function jobStorage(accessCode: string, pupilCode: string) {
   };
 }
 
-type Task = { stage: 'A' | 'C'; item: DictaItem };
-
 export default function PupilExercise() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -31,7 +30,8 @@ export default function PupilExercise() {
 
   const [opened, setOpened] = useState<OpenedSession | null>(null);
   const [items, setItems] = useState<DictaItem[]>([]);
-  const [current, setCurrent] = useState<Task | null>(null);
+  const [sentences, setSentences] = useState<DictaSentence[]>([]);
+  const [current, setCurrent] = useState<Step | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(0);
   const rowsRef = useRef<AttemptRow[]>([]);
@@ -47,7 +47,7 @@ export default function PupilExercise() {
         if (cancelled) return;
         const shuffled = shuffleArray(s.items);
         // Les lignes du serveur ne contiennent pas encore les envois en attente : on les ajoute avant de choisir la suite.
-        const rows = applyPendingJobs(s.attempts, storage.load(), shuffled);
+        const rows = applyPendingJobs(s.attempts, storage.load(), shuffled, s.sentences);
         queueRef.current = createSaveQueue<Job>({
           send: job => {
             if (job.kind === 'help') return recordHelp({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage });
@@ -62,7 +62,8 @@ export default function PupilExercise() {
         rowsRef.current = rows;
         setOpened(s);
         setItems(shuffled);
-        setCurrent(nextTask(shuffled, rows, s.options.finalRound));
+        setSentences(s.sentences);
+        setCurrent(nextStep({ items: shuffled, sentences: s.sentences, rows, mode: s.mode, finalRound: s.options.finalRound }));
       })
       .catch((e: Error) => { if (!cancelled) setError(e.message); });
     return () => { cancelled = true; };
@@ -74,28 +75,43 @@ export default function PupilExercise() {
     return () => window.removeEventListener('beforeunload', warn);
   }, []);
 
-  function handleAttempt(task: Task, r: AttemptResult) {
+  function handleAttempt(step: Step, r: AttemptResult) {
+    const item = step.item!;
     const attemptNumber = rowsRef.current.filter(
-      x => x.itemId === task.item.id && x.stage === task.stage && x.kind === 'attempt',
+      x => x.itemId === item.id && x.stage === step.stage && x.kind === 'attempt',
     ).length + 1;
     rowsRef.current = [
       ...rowsRef.current,
-      { itemId: task.item.id, stage: task.stage, kind: 'attempt', attemptNumber, correct: r.correct },
+      { itemId: item.id, stage: step.stage, kind: 'attempt', attemptNumber, correct: r.correct },
     ];
-    queueRef.current?.enqueue({ kind: 'attempt', itemId: task.item.id, stage: task.stage, answer: r.answer, listens: r.listens, screenshot: r.screenshot });
+    queueRef.current?.enqueue({ kind: 'attempt', itemId: item.id, stage: step.stage, answer: r.answer, listens: r.listens, screenshot: r.screenshot });
   }
 
-  function handleHelp(task: Task) {
+  function handleHelp(step: Step) {
+    const item = step.item!;
     rowsRef.current = [
       ...rowsRef.current,
-      { itemId: task.item.id, stage: task.stage, kind: 'help', attemptNumber: 0, correct: null },
+      { itemId: item.id, stage: step.stage, kind: 'help', attemptNumber: 0, correct: null },
     ];
-    queueRef.current?.enqueue({ kind: 'help', itemId: task.item.id, stage: task.stage });
+    queueRef.current?.enqueue({ kind: 'help', itemId: item.id, stage: step.stage });
+  }
+
+  function handleSentenceAttempt(step: Step, r: SentenceAttemptResult) {
+    const sentence = step.sentence!;
+    const stage = step.stage as 'B1' | 'B2';
+    const attemptNumber = rowsRef.current.filter(
+      x => x.sentenceId === sentence.id && x.stage === stage && x.kind === 'attempt',
+    ).length + 1;
+    rowsRef.current = [
+      ...rowsRef.current,
+      { itemId: '', sentenceId: sentence.id, stage, kind: 'attempt', attemptNumber, correct: r.correct },
+    ];
+    queueRef.current?.enqueue({ kind: 'sentence', sentenceId: sentence.id, stage, answer: r.answer, listens: r.listens });
   }
 
   function handleNext() {
     if (!opened) return;
-    setCurrent(nextTask(items, rowsRef.current, opened.options.finalRound));
+    setCurrent(nextStep({ items, sentences, rows: rowsRef.current, mode: opened.mode, finalRound: opened.options.finalRound }));
   }
 
   if (error) {
@@ -125,6 +141,31 @@ export default function PupilExercise() {
     );
   }
 
+  const key = `${current.stage}:${current.item?.id ?? current.sentence?.id}`;
+
+  if (current.sentence && (current.stage === 'B1' || current.stage === 'B2')) {
+    const stage = current.stage;
+    const done = sentences.filter(s => rowsRef.current.some(
+      r => r.sentenceId === s.id && r.stage === stage && r.kind === 'attempt' && (opened.mode === 'class' || r.correct === true),
+    )).length;
+    return (
+      <PageShell>
+        {pendingBanner}
+        <SentenceExercise
+          key={key}
+          sentence={current.sentence}
+          stage={stage}
+          mode={opened.mode}
+          readAloud={opened.options.readAloud}
+          progressLabel={`Phrase ${Math.min(done + 1, sentences.length)} sur ${sentences.length}`}
+          onAttempt={r => handleSentenceAttempt(current, r)}
+          onNext={handleNext}
+        />
+      </PageShell>
+    );
+  }
+
+  const item = current.item!;
   const doneA = items.filter(i =>
     rowsRef.current.some(r => r.itemId === i.id && r.stage === 'A' && r.kind === 'attempt' && r.correct === true)).length;
   const progressLabel = current.stage === 'A'
@@ -135,8 +176,8 @@ export default function PupilExercise() {
     <PageShell>
       {pendingBanner}
       <WordExercise
-        key={`${current.stage}:${current.item.id}`}
-        word={current.item.word}
+        key={key}
+        word={item.word}
         stage={current.stage}
         canShowCorrect={opened.options.showCorrect && current.stage === 'A'}
         readAloud={opened.options.readAloud}

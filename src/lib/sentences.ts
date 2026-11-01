@@ -81,3 +81,11 @@ export function maxWords(level: string): number {
 export function sentenceTooLong(text: string, level: string): boolean {
   return cleanTokens(text).length > maxWords(level);
 }
+
+// B1 : phrase visible, on ne fait que l'ordonner (aucun mot en trop). B2 : les parasites s'ajoutent aux tuiles.
+export function sentenceForStage(
+  s: { text: string; parasites: string[] },
+  stage: 'B1' | 'B2',
+): { text: string; parasites: string[] } {
+  return { text: s.text, parasites: stage === 'B1' ? [] : s.parasites };
+}
