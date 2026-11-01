@@ -5,7 +5,8 @@ export type DictaItem = { id: string; word: string; position: number };
 export type DictaSentence = { id: string; position: number; text: string; parasites: string[]; itemId: string | null };
 
 export type AttemptRow = {
-  itemId: string;
+  itemId: string; // vide pour une ligne de phrase
+  sentenceId?: string | null;
   stage: Stage;
   kind: 'attempt' | 'help';
   attemptNumber: number;
@@ -22,6 +23,7 @@ export type OpenedSession = {
   mode: 'autonomy' | 'class';
   options: SessionOptions;
   items: DictaItem[];
+  sentences: DictaSentence[];
   attempts: AttemptRow[];
 };
 
@@ -49,6 +51,7 @@ export type SessionListItem = {
 
 export type SaveJob =
   | { kind: 'attempt'; itemId: string; stage: Stage; answer: string; listens: number; screenshot: string | null }
+  | { kind: 'sentence'; sentenceId: string; stage: 'B1' | 'B2'; answer: string; listens: number }
   | { kind: 'help'; itemId: string; stage: Stage };
 
 export type CommentRow = { pupilId: string; body: string; visible: boolean };

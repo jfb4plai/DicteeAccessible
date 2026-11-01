@@ -15,6 +15,7 @@ describe('toOpenedSession', () => {
       mode: 'class',
       options: { showCorrect: false, readAloud: true, finalRound: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
+      sentences: [],
       attempts: [{ itemId: 'i1', stage: 'A', kind: 'attempt', attemptNumber: 1, correct: true }],
     });
   });

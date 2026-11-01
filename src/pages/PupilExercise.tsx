@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import WordExercise, { type AttemptResult } from '../components/WordExercise';
-import { openSession, recordAttempt, recordHelp } from '../lib/api';
+import { openSession, recordAttempt, recordHelp, recordSentenceAttempt } from '../lib/api';
 import { normalizeCode } from '../lib/apiMapping';
 import { applyPendingJobs } from '../lib/pendingRows';
 import { nextTask } from '../lib/progress';
@@ -49,9 +49,13 @@ export default function PupilExercise() {
         // Les lignes du serveur ne contiennent pas encore les envois en attente : on les ajoute avant de choisir la suite.
         const rows = applyPendingJobs(s.attempts, storage.load(), shuffled);
         queueRef.current = createSaveQueue<Job>({
-          send: job => job.kind === 'help'
-            ? recordHelp({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage })
-            : recordAttempt({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage, answer: job.answer, listens: job.listens, screenshot: job.screenshot }).then(() => undefined),
+          send: job => {
+            if (job.kind === 'help') return recordHelp({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage });
+            if (job.kind === 'sentence') {
+              return recordSentenceAttempt({ accessCode, pupilCode, sentenceId: job.sentenceId, stage: job.stage, answer: job.answer, listens: job.listens }).then(() => undefined);
+            }
+            return recordAttempt({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage, answer: job.answer, listens: job.listens, screenshot: job.screenshot }).then(() => undefined);
+          },
           onChange: setPending,
           storage,
         });

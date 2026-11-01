@@ -44,6 +44,21 @@ export async function recordAttempt(a: {
   return { correct: data.correct, attemptNumber: data.attempt_number };
 }
 
+export async function recordSentenceAttempt(a: {
+  accessCode: string; pupilCode: string; sentenceId: string; stage: 'B1' | 'B2'; answer: string; listens: number;
+}): Promise<{ correct: boolean; attemptNumber: number }> {
+  const { data, error } = await supabase.rpc('dicta_record_sentence_attempt', {
+    p_access_code: normalizeCode(a.accessCode),
+    p_pupil_code: normalizeCode(a.pupilCode),
+    p_sentence_id: a.sentenceId,
+    p_stage: a.stage,
+    p_answer: a.answer,
+    p_listens: a.listens,
+  });
+  if (error) fail('Enregistrement impossible.');
+  return { correct: data.correct, attemptNumber: data.attempt_number };
+}
+
 export async function recordHelp(a: { accessCode: string; pupilCode: string; itemId: string; stage: Stage }): Promise<void> {
   const { error } = await supabase.rpc('dicta_record_help', {
     p_access_code: normalizeCode(a.accessCode),
