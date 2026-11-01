@@ -1,12 +1,3 @@
-export function generateAccessCode(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
-}
-
 export function shuffleArray<T>(array: T[], rng: () => number = Math.random): T[] {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
