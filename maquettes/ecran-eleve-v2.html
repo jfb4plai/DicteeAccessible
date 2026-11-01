@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette DictéeActif</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#faf9f7;color:#1f2937;margin:0;padding:16px;line-height:1.5;font-size:16px}
+  main{max-width:1000px;margin:0 auto}
+  h2{color:#0f6e56;margin:0 0 4px}
+  h3{margin:24px 0 8px}
+  .subtitle{color:#6b7280;margin:0 0 16px}
+  .section{margin-bottom:24px}
+  .mockup{border:1px solid #d1d5db;border-radius:10px;background:#fff;overflow:hidden}
+  .mockup-header{background:#f3f4f6;padding:8px 12px;font-weight:700;font-size:15px;border-bottom:1px solid #e5e7eb}
+  .mockup-body{padding:16px}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .banner{background:#fff7ed;border:1px solid #f97316;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:15px}
+</style>
+</head>
+<body>
+<main>
+<div class="banner">Maquette de structure pour discussion (non fonctionnelle, style provisoire). Exemples tirés d'un courriel d'enseignante ; aucun nom d'élève.</div>
+<h2>Version corrigée : parcours et mots parasites selon la règle</h2>
+<p class="subtitle">Correction : en B2, les parasites reprennent l'autre forme du même verbe (-é / -er), sinon l'exercice ne fait pas discriminer la règle.</p>
+
+<style>
+  .ph{font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#1f2937}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0f6e56;color:#fff;font-size:16px}
+  .zone{display:flex;gap:6px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+  .slotw{min-width:78px;height:52px;border:3px dashed #9ca3af;border-radius:8px;background:#f9fafb;display:flex;align-items:center;justify-content:center;font-size:22px;padding:0 10px}
+  .tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+  .tilew{min-width:64px;height:52px;background:#f97316;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;padding:0 12px}
+  .tilew.par{outline:3px solid #7c2d12}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;font-size:17px;font-weight:700;border:0}
+  .btn.listen{background:#0f6e56;color:#fff}
+  .note{font-size:15px;color:#6b7280;text-align:center;margin-top:6px}
+  .hidden{background:#e5e7eb;color:#4b5563;border-radius:8px;padding:14px;text-align:center;font-size:20px}
+  .path{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 14px;font-size:17px}
+  .step{background:#e6f4f0;border:2px solid #0f6e56;border-radius:8px;padding:6px 12px;font-weight:700}
+  .step.class{background:#fff7ed;border-color:#f97316}
+  .arrow{color:#6b7280}
+  .legend{font-size:15px;color:#4b5563;margin:4px 0}
+</style>
+
+<div class="section">
+  <h3>Parcours</h3>
+  <div class="mockup ph"><div class="mockup-body">
+    <div><b>Apprentissage en autonomie</b></div>
+    <div class="path"><span class="step">A. Mots</span><span class="arrow">→</span><span class="step">B1. Phrase visible</span><span class="arrow">→</span><span class="step">B2. Par cœur + parasites</span><span class="arrow">→</span><span class="step">C. Mots à revoir</span></div>
+    <div><b>Dictée en classe</b></div>
+    <div class="path"><span class="step class">B2. Par cœur + parasites (autres parasites)</span></div>
+    <p class="legend">Question ouverte : pour la dictée de <i>mots</i> en classe, l'élève passe-t-il par A sans aide, ou par autre chose ?</p>
+  </div></div>
+</div>
+
+<div class="section">
+  <h3>B2 corrigé, avec la règle « -é ou -er » ciblée</h3>
+  <div class="split">
+    <div class="mockup ph">
+      <div class="mockup-header">Apprentissage en autonomie (phrase du 23/11)</div>
+      <div class="mockup-body" style="text-align:center">
+        <div class="hidden">Phrase cachée. Réécoute-la si tu en as besoin.</div>
+        <div style="margin:10px 0"><span class="btn listen">🔊 Écouter la phrase</span></div>
+        <div class="zone"><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div></div>
+        <div class="tiles">
+          <div class="tilew">vent</div><div class="tilew par">souffler</div><div class="tilew">Le</div><div class="tilew">fort.</div><div class="tilew">a</div><div class="tilew">soufflé</div><div class="tilew par">soufflez</div>
+        </div>
+        <p class="note">Contour brun = parasites (autres formes de « souffler »). L'élève ne les voit pas marqués.</p>
+      </div>
+    </div>
+    <div class="mockup ph">
+      <div class="mockup-header">Dictée en classe, lundi (autre phrase, autres parasites)</div>
+      <div class="mockup-body" style="text-align:center">
+        <div class="hidden">Phrase cachée. Réécoute-la si tu en as besoin.</div>
+        <div style="margin:10px 0"><span class="btn listen">🔊 Écouter la phrase</span></div>
+        <div class="zone"><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div></div>
+        <div class="tiles">
+          <div class="tilew">les</div><div class="tilew par">ramassé</div><div class="tilew">Je</div><div class="tilew">feuilles.</div><div class="tilew">vais</div><div class="tilew">ramasser</div><div class="tilew par">ramassez</div>
+        </div>
+        <p class="note">Ici « vais » appelle l'infinitif : « ramasser ». Le parasite « ramassé » force à choisir.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Comment les parasites seraient choisis</h3>
+  <div class="mockup ph"><div class="mockup-body">
+    <p style="margin:0 0 6px"><b>Règle « -é ou -er » :</b> autres formes du même verbe (-é, -ée, -er, -ez). Proposées par l'IA, relues par l'enseignant.</p>
+    <p style="margin:0 0 6px"><b>Sans règle :</b> mots proches choisis par l'enseignant (ex. vent / vend).</p>
+    <p style="margin:0"><b>Contrôle par le code :</b> un parasite ne doit jamais être égal à un mot de la phrase. Que le parasite soit bien une autre forme du même verbe n'est pas vérifiable par le code : c'est l'enseignant qui valide.</p>
+  </div></div>
+</div>
+</main>
+</body>
+</html>

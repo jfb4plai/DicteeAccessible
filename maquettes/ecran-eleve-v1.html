@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette DictéeActif</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#faf9f7;color:#1f2937;margin:0;padding:16px;line-height:1.5;font-size:16px}
+  main{max-width:1000px;margin:0 auto}
+  h2{color:#0f6e56;margin:0 0 4px}
+  h3{margin:24px 0 8px}
+  .subtitle{color:#6b7280;margin:0 0 16px}
+  .section{margin-bottom:24px}
+  .mockup{border:1px solid #d1d5db;border-radius:10px;background:#fff;overflow:hidden}
+  .mockup-header{background:#f3f4f6;padding:8px 12px;font-weight:700;font-size:15px;border-bottom:1px solid #e5e7eb}
+  .mockup-body{padding:16px}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .banner{background:#fff7ed;border:1px solid #f97316;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:15px}
+</style>
+</head>
+<body>
+<main>
+<div class="banner">Maquette de structure pour discussion (non fonctionnelle, style provisoire). Exemples tirés d'un courriel d'enseignante ; aucun nom d'élève.</div>
+<h2>Écran de l'élève : de la vérification du mot à la phrase</h2>
+<p class="subtitle">Maquette de structure (pas le style final). Exemples tirés du courriel : « moustache » et « Le vent a soufflé fort. » Code élève : E1.</p>
+
+<style>
+  .ph{font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#1f2937}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#0f6e56;color:#fff;border-radius:8px 8px 0 0;font-size:16px}
+  .zone{display:flex;gap:6px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+  .slot{width:44px;height:52px;border:3px solid #9ca3af;border-radius:8px;background:#f9fafb;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+  .slot.ok{border-color:#0f6e56;background:#e6f4f0}
+  .slotw{min-width:78px;height:52px;border:3px dashed #9ca3af;border-radius:8px;background:#f9fafb;display:flex;align-items:center;justify-content:center;font-size:22px;padding:0 10px}
+  .slotw.ok{border:3px solid #0f6e56;background:#e6f4f0;font-weight:700}
+  .tiles{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+  .tile{min-width:48px;height:52px;background:#f97316;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;padding:0 8px}
+  .tilew{min-width:64px;height:52px;background:#f97316;color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;padding:0 12px}
+  .tilew.par{background:#f97316}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;font-size:17px;font-weight:700;border:0}
+  .btn.listen{background:#0f6e56;color:#fff}
+  .btn.show{background:#fff;color:#7c2d12;border:2px solid #f97316}
+  .btn.ok{background:#16a34a;color:#fff}
+  .note{font-size:15px;color:#6b7280;text-align:center;margin-top:6px}
+  .hidden{background:#e5e7eb;color:#6b7280;border-radius:8px;padding:14px;text-align:center;font-size:20px}
+  .flag{display:inline-block;background:#fff7ed;border:1px solid #f97316;color:#7c2d12;border-radius:6px;padding:2px 8px;font-size:14px}
+</style>
+
+<div class="section">
+  <h3>A. Étape 1 : écrire correctement chaque mot (logique de Dictée Interactive)</h3>
+  <div class="mockup ph">
+    <div class="bar"><span>Code E1</span><span>Mot 3 sur 10</span></div>
+    <div class="mockup-body" style="text-align:center">
+      <div style="margin:6px 0"><span class="btn listen">🔊 Écouter le mot</span></div>
+      <div class="zone">
+        <div class="slot ok">m</div><div class="slot ok">o</div><div class="slot ok">u</div><div class="slot ok">s</div>
+        <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+      </div>
+      <div class="tiles">
+        <div class="tile">t</div><div class="tile">a</div><div class="tile">c</div><div class="tile">h</div><div class="tile">e</div><div class="tile">é</div><div class="tile">r</div>
+      </div>
+      <div style="margin-top:14px"><span class="btn show">👁 Montrer la bonne orthographe</span></div>
+      <p class="note">Le bouton n'existe que si l'enseignant l'a activé. S'il est utilisé, le mot est marqué « non maîtrisé », signalé à l'enseignant, et revient à la fin.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>B. Étape 2 : reconstituer la phrase (tuiles de mots), seulement quand tous ses mots ont été réussis</h3>
+  <div class="split">
+    <div class="mockup ph">
+      <div class="mockup-header">B1. Phrase visible pendant la tâche</div>
+      <div class="mockup-body" style="text-align:center">
+        <div style="margin:6px 0"><span class="btn listen">🔊 Écouter la phrase</span></div>
+        <div class="zone">
+          <div class="slotw ok">Le</div><div class="slotw ok">vent</div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div>
+        </div>
+        <div class="tiles">
+          <div class="tilew">fort.</div><div class="tilew">a</div><div class="tilew">soufflé</div>
+        </div>
+        <p class="note">Glisser ou toucher une tuile, puis toucher sa place.</p>
+      </div>
+    </div>
+    <div class="mockup ph">
+      <div class="mockup-header">B2. Option « par cœur » : phrase cachée + mots parasites</div>
+      <div class="mockup-body" style="text-align:center">
+        <div class="hidden">Phrase cachée. Réécoute-la si tu en as besoin.</div>
+        <div style="margin:10px 0"><span class="btn listen">🔊 Écouter la phrase</span></div>
+        <div class="zone">
+          <div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div><div class="slotw"></div>
+        </div>
+        <div class="tiles">
+          <div class="tilew">vent</div><div class="tilew">Le</div><div class="tilew">soufflait</div><div class="tilew">fort.</div><div class="tilew">a</div><div class="tilew">soufflé</div><div class="tilew">vend</div>
+        </div>
+        <p class="note">« soufflait » et « vend » sont des parasites choisis par l'enseignant ou proposés par l'IA.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>C. Fin de séance</h3>
+  <div class="mockup ph">
+    <div class="mockup-body" style="text-align:center">
+      <p style="font-size:22px;margin:4px 0"><b>Dernier tour : 2 mots à revoir</b></p>
+      <p style="margin:4px 0">« moustache » et « épluche » reviennent une seconde fois, sans aide.</p>
+      <p class="note">Si l'élève réussit : « maîtrisé » côté enseignant. Sinon : « non maîtrisé ».</p>
+    </div>
+  </div>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette DictéeActif</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#faf9f7;color:#1f2937;margin:0;padding:16px;line-height:1.5;font-size:16px}
+  main{max-width:1000px;margin:0 auto}
+  h2{color:#0f6e56;margin:0 0 4px}
+  h3{margin:24px 0 8px}
+  .subtitle{color:#6b7280;margin:0 0 16px}
+  .section{margin-bottom:24px}
+  .mockup{border:1px solid #d1d5db;border-radius:10px;background:#fff;overflow:hidden}
+  .mockup-header{background:#f3f4f6;padding:8px 12px;font-weight:700;font-size:15px;border-bottom:1px solid #e5e7eb}
+  .mockup-body{padding:16px}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .banner{background:#fff7ed;border:1px solid #f97316;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:15px}
+</style>
+</head>
+<body>
+<main>
+<div class="banner">Maquette de structure pour discussion (non fonctionnelle, style provisoire). Exemples tirés d'un courriel d'enseignante ; aucun nom d'élève.</div>
+<h2>Écrans de l'enseignante : résultats, puis création d'une session</h2>
+<p class="subtitle">Données fictives (aucun vrai résultat). Mots issus du courriel ; erreurs inventées pour la maquette.</p>
+
+<style>
+  .ph{font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#1f2937}
+  .bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 14px;background:#0f6e56;color:#fff}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+  .kpi{border:1px solid #d1d5db;border-radius:8px;padding:10px;background:#f9fafb}
+  .kpi b{display:block;font-size:24px}
+  .kpi span{font-size:14px;color:#4b5563}
+  table{width:100%;border-collapse:collapse;font-size:16px}
+  th,td{border-bottom:1px solid #e5e7eb;padding:8px 6px;text-align:left;vertical-align:top}
+  th{background:#f3f4f6;font-size:14px}
+  .ok{color:#166534;font-weight:700}
+  .ko{color:#b91c1c;font-weight:700}
+  .tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:14px;font-weight:700}
+  .tag.warn{background:#fff7ed;border:1px solid #f97316;color:#7c2d12}
+  .tag.bad{background:#fee2e2;border:1px solid #ef4444;color:#7f1d1d}
+  .tag.good{background:#dcfce7;border:1px solid #16a34a;color:#14532d}
+  .fld{margin:12px 0}
+  .fld label{display:block;font-weight:700;margin-bottom:4px}
+  .inp{border:2px solid #9ca3af;border-radius:8px;padding:10px;background:#fff;color:#6b7280;min-height:22px}
+  .help{font-size:14px;color:#4b5563;margin-top:4px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+  .opt{border:1px solid #d1d5db;border-radius:8px;padding:10px;background:#fff}
+  .opt b{display:block}
+  .sw{display:inline-block;border-radius:10px;padding:1px 10px;font-size:14px;font-weight:700;margin-left:6px}
+  .sw.on{background:#0f6e56;color:#fff}
+  .sw.off{background:#e5e7eb;color:#374151}
+  .btn{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:700;background:#0f6e56;color:#fff}
+  .btn.sec{background:#fff;color:#0f6e56;border:2px solid #0f6e56}
+  .qr{width:92px;height:92px;background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0 0/16px 16px;border:6px solid #fff;outline:1px solid #d1d5db}
+  .share{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+</style>
+
+<div class="section">
+  <h3>1. Résultats d'une dictée en classe</h3>
+  <div class="mockup ph">
+    <div class="bar"><span><b>Dictée du 16/11 (mots)</b> · dictée en classe · code élève E1</span><span>Enregistrée mot par mot</span></div>
+    <div class="mockup-body">
+      <div class="kpis">
+        <div class="kpi"><b>9 sur 12</b><span>mots réussis du premier coup (information, pas une note)</span></div>
+        <div class="kpi"><b>2 mots</b><span>avec « Montrer la bonne orthographe »</span></div>
+        <div class="kpi"><b>1 mot</b><span>« non maîtrisé » au dernier tour</span></div>
+        <div class="kpi"><b>14 min</b><span>durée de la séance</span></div>
+      </div>
+      <table>
+        <thead><tr><th>Mot attendu</th><th>Écrit au 1er essai</th><th>Essais</th><th>Aide</th><th>Écoutes</th><th>Dernier tour</th><th>Capture</th></tr></thead>
+        <tbody>
+          <tr><td>monsieur</td><td class="ok">monsieur</td><td>1</td><td>–</td><td>1</td><td>–</td><td>–</td></tr>
+          <tr><td>lendemain</td><td class="ko">lendemin</td><td>2</td><td>–</td><td>3</td><td><span class="tag good">maîtrisé</span></td><td>voir</td></tr>
+          <tr><td>paire</td><td class="ko">pere</td><td>2</td><td><span class="tag warn">bonne orthographe montrée</span></td><td>2</td><td><span class="tag good">maîtrisé</span></td><td>voir</td></tr>
+          <tr><td>chaussure</td><td class="ko">chosure</td><td>3</td><td><span class="tag warn">bonne orthographe montrée</span></td><td>4</td><td><span class="tag bad">non maîtrisé</span></td><td>voir</td></tr>
+          <tr><td>toujours</td><td class="ok">toujours</td><td>1</td><td>–</td><td>1</td><td>–</td><td>–</td></tr>
+          <tr><td colspan="7" style="color:#6b7280">… 7 autres mots</td></tr>
+        </tbody>
+      </table>
+      <div class="fld">
+        <label>Ton commentaire pour cette dictée (visible par les personnes autorisées)</label>
+        <div class="inp">Ex. : confond « lendemain » avec une forme en -in ; reprendre « chaussure » en préparation cette semaine.</div>
+        <div class="help">C'est toi qui interprètes ces résultats. L'application ne donne ni note ni conclusion sur l'élève.</div>
+      </div>
+      <div class="share">
+        <div class="qr"></div>
+        <div>
+          <b>Accès en lecture seule (ergothérapeute, parents)</b><br>
+          Code : <b>K7M2QX</b> · valable jusqu'au 30/06 · <span class="btn sec">Révoquer l'accès</span>
+          <div class="help">Les personnes autorisées voient ce tableau et ton commentaire, rien d'autre. L'invitation par e-mail viendra plus tard.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. Création d'une session (extrait)</h3>
+  <div class="mockup ph">
+    <div class="mockup-header">Nouvelle session</div>
+    <div class="mockup-body">
+      <div class="fld"><label>Titre de la session</label><div class="inp">Ex. : Dictée de mots du 16/11</div><div class="help">Sert à retrouver la dictée dans tes résultats. L'élève ne le voit pas.</div></div>
+      <div class="fld"><label>Niveau de la classe</label><div class="inp">P3 ▾</div><div class="help">Adapte la longueur et le vocabulaire des phrases proposées par l'IA, de P1 à P6.</div></div>
+      <div class="fld"><label>Mots de la dictée</label><div class="inp">monsieur – droit – lendemain – chaque – paire – boite – quelques</div><div class="help">Sépare les mots par un tiret ou un retour à la ligne. Ils servent de base aux exercices et aux phrases.</div></div>
+      <div class="fld"><label>Règle travaillée (facultatif)</label><div class="inp">Ex. : é ou er</div><div class="help">Oriente les phrases et les mots parasites : avec « é ou er », les parasites sont d'autres formes du même verbe.</div></div>
+      <div class="fld"><label>Contexte de ta classe (facultatif)</label><div class="inp">Ex. : la classe prépare une sortie au parc de la Boverie</div><div class="help">Les phrases reprennent ton vocabulaire et tes situations, pas des phrases génériques.</div></div>
+
+      <div class="fld"><label>Type de session</label>
+        <div class="opts">
+          <div class="opt"><b>Préparation en autonomie</b>A → B1 → B2 → C</div>
+          <div class="opt"><b>Dictée en classe</b>résultats enregistrés mot par mot</div>
+        </div>
+      </div>
+      <div class="fld"><label>Options</label>
+        <div class="opts">
+          <div class="opt"><b>Montrer la bonne orthographe <span class="sw off">désactivé en classe</span></b><span class="help">Si l'élève l'utilise, le mot est signalé « non maîtrisé » et revient à la fin.</span></div>
+          <div class="opt"><b>Dictée de mots en classe : saisie</b><span class="help">Au choix : lettres à placer (comme Dictée Interactive) ou tuiles de mots pour les phrases.</span></div>
+          <div class="opt"><b>Lecture à haute voix <span class="sw on">activée</span></b><span class="help">Facultative pour l'élève, aide à la lecture des consignes.</span></div>
+          <div class="opt"><b>Phrases par cœur (B2) <span class="sw on">activé</span></b><span class="help">La phrase est cachée et des parasites sont ajoutés.</span></div>
+        </div>
+      </div>
+
+      <div class="fld"><label>Phrases proposées par l'IA : à relire avant publication</label>
+        <table>
+          <tbody>
+            <tr><td>☑</td><td>Le vent a soufflé fort.</td><td class="help">parasites : souffler, soufflez</td></tr>
+            <tr><td>☐</td><td>Je vais ramasser les feuilles.</td><td class="help">parasites : ramassé, ramassez</td></tr>
+          </tbody>
+        </table>
+        <div class="help">Rien n'est publié tant que tu n'as pas validé chaque phrase. Tu peux la modifier ou la remplacer.</div>
+      </div>
+      <span class="btn">Publier la session</span>
+    </div>
+  </div>
+</div>
+</main>
+</body>
+</html>
