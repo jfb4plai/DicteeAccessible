@@ -95,7 +95,7 @@ Option par session. Si l'élève l'utilise : le mot est signalé à l'enseignant
 
 Avant tout appel de synthèse vocale, le serveur remplace chaque nombre écrit en chiffres par ses mots, selon l'usage belge. La voix lit alors le mot écrit, quelle que soit sa propre habitude (Léa, voix parisienne, ne dit pas « nonante » d'elle-même : non constaté, à vérifier à l'oreille).
 
-- Portée : entiers de 0 à 999 999, isolés dans le texte (`\d+`). Un nombre collé à des lettres (« A4 ») reste inchangé.
+- Portée : entiers de 0 à 999 999, isolés dans le texte (motif `\b\d+\b`). Un nombre collé à des lettres (« A4 ») reste inchangé.
 - Formes : 70 « septante », 90 « nonante », 80 « quatre-vingts » (« quatre-vingt » devant un autre nombre). « et un » pour 21, 31, 41, 51, 61, 71, 91 ; pas de « et » pour 81 (« quatre-vingt-un »). Pluriel de « cent » sauf devant un autre nombre (« deux cents », « deux cent un »). Traits d'union entre dizaines et unités.
 - Exemples attendus (tests) : 70 → septante ; 71 → septante et un ; 72 → septante-deux ; 79 → septante-neuf ; 80 → quatre-vingts ; 81 → quatre-vingt-un ; 90 → nonante ; 91 → nonante et un ; 99 → nonante-neuf ; 100 → cent ; 101 → cent un ; 170 → cent septante ; 190 → cent nonante ; 200 → deux cents ; 1990 → mille neuf cent nonante ; « Il a 90 ans. » → « Il a nonante ans. ».
 - Le texte converti est celui qui sert de clé de cache audio (texte + voix). Le texte affiché à l'élève n'est jamais modifié.
