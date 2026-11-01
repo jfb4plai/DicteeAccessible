@@ -5,7 +5,7 @@ import TeacherNav from '../components/TeacherNav';
 import PupilLinks from '../components/PupilLinks';
 import { createSession, listPupils } from '../lib/api';
 import { validateSessionInput } from '../lib/sessionForm';
-import type { Contents, Pupil, SessionOptions } from '../lib/types';
+import type { Contents, Pupil, SessionOptions, Voice } from '../lib/types';
 
 const DEFAULTS: Record<'autonomy' | 'class', SessionOptions> = {
   autonomy: { showCorrect: true, readAloud: true, finalRound: true },
@@ -15,6 +15,7 @@ const DEFAULTS: Record<'autonomy' | 'class', SessionOptions> = {
 export default function NewSession() {
   const navigate = useNavigate();
   const [contents, setContents] = useState<Contents>('words');
+  const [voice, setVoice] = useState<Voice>('adrien');
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [title, setTitle] = useState('');
   const [level, setLevel] = useState('P3');
@@ -42,7 +43,7 @@ export default function NewSession() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setFailure('');
-    const result = validateSessionInput({ title, level, mode, wordsText, contents, pupilIds, options });
+    const result = validateSessionInput({ title, level, mode, wordsText, contents, voice, pupilIds, options });
     if (!result.ok) { setErrors(result.errors); return; }
     setErrors({});
     setDuplicates(result.duplicates);
@@ -124,6 +125,16 @@ export default function NewSession() {
                 <p className="help">{help}</p>
               </label>
             ))}
+          </div>
+          <div className="plai-field">
+            <label className="plai-label" htmlFor="voice">Voix de lecture</label>
+            <select id="voice" className="plai-input" value={voice} onChange={e => setVoice(e.target.value as Voice)}>
+              <option value="adrien">Adrien, voix belge</option>
+              <option value="jef">Jean-François, voix clonée</option>
+              <option value="device">Voix de l'appareil</option>
+            </select>
+            <p className="help">Adrien lit « nonante » et « septante » comme en Belgique. La voix de l'appareil ne demande aucun service en ligne, mais lit « quatre-vingt-dix » comme en France.</p>
+            {errors.voice && <p className="plai-error">{errors.voice}</p>}
           </div>
           <details>
             <summary style={{ cursor: 'pointer', minHeight: 40 }}><strong>Options</strong> (réglées pour le type choisi)</summary>

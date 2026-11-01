@@ -23,6 +23,7 @@ export function toOpenedSession(raw: any): OpenedSession {
   return {
     sessionId: raw.session_id,
     mode: raw.mode,
+    voice: raw.voice === 'jef' || raw.voice === 'device' ? raw.voice : 'adrien',
     options: {
       showCorrect: raw.options.show_correct,
       readAloud: raw.options.read_aloud,

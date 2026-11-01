@@ -107,6 +107,7 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
         show_correct: input.options.showCorrect,
         read_aloud: input.options.readAloud,
         final_round: input.options.finalRound,
+        voice: input.voice,
         published: input.contents === 'words', // avec des phrases : brouillon jusqu'à la validation
       })
       .select('id, access_code')

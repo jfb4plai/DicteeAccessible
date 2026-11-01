@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useRef } from 'react';
 import { sentenceForStage } from '../lib/sentences';
 import { createTileExercise, tileReducer } from '../lib/tileExercise';
-import { speechService } from '../lib/speech';
 import type { DictaSentence } from '../lib/types';
 
 export type SentenceAttemptResult = { answer: string; correct: boolean; listens: number };
@@ -12,6 +11,7 @@ type Props = {
   mode: 'autonomy' | 'class';
   readAloud: boolean;
   progressLabel: string;
+  speak: () => Promise<void>;
   onAttempt: (r: SentenceAttemptResult) => void;
   onNext: () => void;
 };
@@ -32,7 +32,7 @@ export default function SentenceExercise(p: Props) {
 
   useEffect(() => {
     if (!p.readAloud) return;
-    const t = setTimeout(() => { void speechService.speak(p.sentence.text); }, 500);
+    const t = setTimeout(() => { void p.speak(); }, 500);
     return () => clearTimeout(t);
   }, [p.sentence.text, p.readAloud]);
 
@@ -57,7 +57,7 @@ export default function SentenceExercise(p: Props) {
 
   function listen() {
     listens.current += 1;
-    void speechService.speak(p.sentence.text);
+    void p.speak();
   }
 
   const locked = state.phase === 'right' || state.phase === 'wrong';

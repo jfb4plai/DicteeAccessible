@@ -13,6 +13,7 @@ describe('toOpenedSession', () => {
     expect(toOpenedSession(raw)).toEqual({
       sessionId: 's1',
       mode: 'class',
+      voice: 'adrien',
       options: { showCorrect: false, readAloud: true, finalRound: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
       sentences: [],

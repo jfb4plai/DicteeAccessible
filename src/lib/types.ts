@@ -1,3 +1,5 @@
+export type Voice = 'adrien' | 'jef' | 'device';
+
 export type Stage = 'A' | 'B1' | 'B2' | 'C';
 
 export type DictaItem = { id: string; word: string; position: number };
@@ -21,6 +23,7 @@ export type SessionOptions = { showCorrect: boolean; readAloud: boolean; finalRo
 export type OpenedSession = {
   sessionId: string;
   mode: 'autonomy' | 'class';
+  voice: Voice;
   options: SessionOptions;
   items: DictaItem[];
   sentences: DictaSentence[];
@@ -37,6 +40,7 @@ export type SessionInput = {
   mode: 'autonomy' | 'class';
   words: string[];
   contents: Contents;
+  voice: Voice;
   pupilIds: string[];
   options: SessionOptions;
 };

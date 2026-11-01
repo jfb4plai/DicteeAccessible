@@ -2,7 +2,6 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import LetterBoard from './LetterBoard';
 import { createExercise, exerciseReducer } from '../lib/letterExercise';
-import { speechService } from '../lib/speech';
 import type { Stage } from '../lib/types';
 
 export type AttemptResult = { answer: string; correct: boolean; listens: number; screenshot: string | null };
@@ -13,6 +12,7 @@ type Props = {
   canShowCorrect: boolean;
   readAloud: boolean;
   progressLabel: string;
+  speak: () => Promise<void>;
   onAttempt: (r: AttemptResult) => void;
   onHelp: () => void;
   onNext: () => void;
@@ -41,7 +41,7 @@ export default function WordExercise(p: Props) {
 
   useEffect(() => {
     if (!p.readAloud) return;
-    const t = setTimeout(() => { void speechService.speak(p.word); }, 500);
+    const t = setTimeout(() => { void p.speak(); }, 500);
     return () => clearTimeout(t);
   }, [p.word, p.readAloud]);
 
@@ -71,7 +71,7 @@ export default function WordExercise(p: Props) {
 
   function listen() {
     listens.current += 1;
-    void speechService.speak(p.word);
+    void p.speak();
   }
 
   function showCorrect() {

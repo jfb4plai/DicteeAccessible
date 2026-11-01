@@ -5,6 +5,7 @@ import WordExercise, { type AttemptResult } from '../components/WordExercise';
 import SentenceExercise, { type SentenceAttemptResult } from '../components/SentenceExercise';
 import { openSession, recordAttempt, recordHelp, recordSentenceAttempt } from '../lib/api';
 import { normalizeCode } from '../lib/apiMapping';
+import { createPlayer, type Player } from '../lib/audio';
 import { applyPendingJobs } from '../lib/pendingRows';
 import { nextStep, type Step } from '../lib/progress';
 import { createSaveQueue } from '../lib/saveQueue';
@@ -36,6 +37,7 @@ export default function PupilExercise() {
   const [pending, setPending] = useState(0);
   const rowsRef = useRef<AttemptRow[]>([]);
   const queueRef = useRef<ReturnType<typeof createSaveQueue<Job>> | null>(null);
+  const playerRef = useRef<Player | null>(null);
 
   // Ouverture de la dictée. Les lignes déjà enregistrées décident de la suite (reprise après rechargement).
   useEffect(() => {
@@ -60,6 +62,8 @@ export default function PupilExercise() {
           storage,
         });
         rowsRef.current = rows;
+        playerRef.current = createPlayer({ accessCode, voice: s.voice });
+        void playerRef.current.prepare(shuffled, s.sentences);
         setOpened(s);
         setItems(shuffled);
         setSentences(s.sentences);
@@ -158,6 +162,7 @@ export default function PupilExercise() {
           mode={opened.mode}
           readAloud={opened.options.readAloud}
           progressLabel={`Phrase ${Math.min(done + 1, sentences.length)} sur ${sentences.length}`}
+          speak={() => playerRef.current!.playSentence(current.sentence!)}
           onAttempt={r => handleSentenceAttempt(current, r)}
           onNext={handleNext}
         />
@@ -182,6 +187,7 @@ export default function PupilExercise() {
         canShowCorrect={opened.options.showCorrect && current.stage === 'A'}
         readAloud={opened.options.readAloud}
         progressLabel={progressLabel}
+        speak={() => playerRef.current!.playWord(item)}
         onAttempt={r => handleAttempt(current, r)}
         onHelp={() => handleHelp(current)}
         onNext={handleNext}
