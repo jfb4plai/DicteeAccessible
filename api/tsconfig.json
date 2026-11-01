@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "lib": ["ES2022", "DOM"]
+  },
+  "include": ["./*.ts", "../src/lib/*.ts"],
+  "exclude": ["../src/lib/__tests__", "../src/lib/api.ts", "../src/lib/supabase.ts"]
+}

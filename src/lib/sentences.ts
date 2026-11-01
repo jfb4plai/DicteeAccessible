@@ -1,4 +1,4 @@
-import { shuffleArray } from './utils';
+import { shuffleArray } from './utils.js';
 import type { AttemptRow, DictaItem, DictaSentence } from './types';
 
 const EDGE = /^[.,;:!?«»"()[\]…\s]+|[.,;:!?«»"()[\]…\s]+$/g;
