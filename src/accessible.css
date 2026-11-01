@@ -1,6 +1,6 @@
 /* Surcharges d'accessibilité sur plai-style.css : Arial, 16 px minimum, cibles de 48 px. */
 body { font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
-h1, h2, h3 { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; }
+h1, h2, h3, .plai-nav-logo, .plai-section h2, .plai-empty { font-family: 'DM Sans', Arial, Helvetica, sans-serif; font-weight: 700; font-style: normal; }
 .plai-label, .plai-nav-link, .plai-banner, .plai-footer, .plai-error, .plai-success, .plai-input,
 .plai-btn, .plai-btn-ghost, .plai-badge { font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
 .plai-btn, .plai-btn-ghost { min-height: 48px; padding: 10px 20px; }
