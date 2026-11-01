@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Mail, Lock, UserPlus, LogIn } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import PageShell from '../components/PageShell';
 
 export default function TeacherAuth() {
   const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
@@ -60,14 +61,9 @@ export default function TeacherAuth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 p-4">
+    <PageShell>
       <div className="max-w-md mx-auto">
         <div className="mb-6">
-          <img
-            src="/plai-logo.jpg"
-            alt="PlAI - Pôle Liégeois d'Accompagnement vers une École Inclusive"
-            className="h-16 w-auto object-contain mb-4"
-          />
           <Link
             to="/"
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
@@ -102,7 +98,7 @@ export default function TeacherAuth() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="votre.email@exemple.fr"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0f6e56] focus:outline-none text-lg"
                   required
                 />
               </div>
@@ -121,7 +117,7 @@ export default function TeacherAuth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={mode === 'signup' ? 'Au moins 6 caractères' : 'Votre mot de passe'}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0f6e56] focus:outline-none text-lg"
                     required
                   />
                 </div>
@@ -141,7 +137,7 @@ export default function TeacherAuth() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirmez votre mot de passe"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0f6e56] focus:outline-none text-lg"
                     required
                   />
                 </div>
@@ -149,12 +145,12 @@ export default function TeacherAuth() {
             )}
 
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-red-700">
                 {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 text-green-700 text-sm">
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 text-green-700">
                 {success}
               </div>
             )}
@@ -162,7 +158,7 @@ export default function TeacherAuth() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
+              className="w-full bg-[#0f6e56] text-white py-3 rounded-lg hover:opacity-90 transition-colors font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
             >
               {loading ? (
                 'Chargement...'
@@ -190,7 +186,7 @@ export default function TeacherAuth() {
                   setError('');
                   setSuccess('');
                 }}
-                className="block w-full text-blue-600 hover:text-blue-700 font-semibold"
+                className="block w-full text-[#0f6e56] font-semibold"
               >
                 {mode === 'login'
                   ? "Pas encore de compte ? Créer un compte"
@@ -200,7 +196,7 @@ export default function TeacherAuth() {
             {mode === 'login' && (
               <button
                 onClick={() => { setMode('reset'); setError(''); setSuccess(''); }}
-                className="block w-full text-gray-500 hover:text-gray-700 text-sm"
+                className="block w-full text-gray-700 hover:text-gray-900"
               >
                 Mot de passe oublié ?
               </button>
@@ -208,7 +204,7 @@ export default function TeacherAuth() {
             {mode === 'reset' && (
               <button
                 onClick={() => { setMode('login'); setError(''); setSuccess(''); }}
-                className="block w-full text-gray-500 hover:text-gray-700 text-sm"
+                className="block w-full text-gray-700 hover:text-gray-900"
               >
                 ← Retour à la connexion
               </button>
@@ -216,6 +212,6 @@ export default function TeacherAuth() {
           </div>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

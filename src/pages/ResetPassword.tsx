@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import PageShell from '../components/PageShell';
 
 export default function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -30,14 +31,9 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-100 p-4">
+    <PageShell>
       <div className="max-w-md mx-auto">
         <div className="mb-6">
-          <img
-            src="/plai-logo.jpg"
-            alt="PlAI - Pôle Liégeois d'Accompagnement vers une École Inclusive"
-            className="h-16 w-auto object-contain mb-4"
-          />
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">
@@ -57,19 +53,19 @@ export default function ResetPassword() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Au moins 6 caractères"
-                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#0f6e56] focus:outline-none text-lg"
                   required
                 />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-red-700">
                 {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 text-green-700 text-sm">
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 text-green-700">
                 {success}
               </div>
             )}
@@ -77,13 +73,13 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+              className="w-full bg-[#0f6e56] text-white py-3 rounded-lg hover:opacity-90 transition-colors font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
             >
               {loading ? 'Enregistrement...' : 'Enregistrer'}
             </button>
           </form>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }
