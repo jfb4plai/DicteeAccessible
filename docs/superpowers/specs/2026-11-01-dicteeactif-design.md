@@ -96,11 +96,20 @@ Option par session. Si l'élève l'utilise : le mot est signalé à l'enseignant
 
 Avant tout appel de synthèse vocale, le serveur remplace chaque nombre écrit en chiffres par ses mots, selon l'usage belge. La voix lit alors le mot écrit, quelle que soit sa propre habitude (Léa, voix parisienne, ne dit pas « nonante » d'elle-même : non constaté, à vérifier à l'oreille).
 
-- Portée : entiers de 0 à 999 999, isolés dans le texte (motif `\b\d+\b`). Un nombre collé à des lettres (« A4 ») reste inchangé.
-- Formes : 70 « septante », 90 « nonante », 80 « quatre-vingts » (« quatre-vingt » devant un autre nombre). « et un » pour 21, 31, 41, 51, 61, 71, 91 ; pas de « et » pour 81 (« quatre-vingt-un »). Pluriel de « cent » sauf devant un autre nombre (« deux cents », « deux cent un »). Traits d'union entre dizaines et unités.
-- Exemples attendus (tests) : 70 → septante ; 71 → septante et un ; 72 → septante-deux ; 79 → septante-neuf ; 80 → quatre-vingts ; 81 → quatre-vingt-un ; 90 → nonante ; 91 → nonante et un ; 99 → nonante-neuf ; 100 → cent ; 101 → cent un ; 170 → cent septante ; 190 → cent nonante ; 200 → deux cents ; 1990 → mille neuf cent nonante ; « Il a 90 ans. » → « Il a nonante ans. ».
-- Le texte converti est celui qui sert de clé de cache audio (texte + voix). Le texte affiché à l'élève n'est jamais modifié.
-- Hors portée v1 : décimaux, ordinaux (« 1er »), nombres écrits « 1 000 » ou « 1.000 », romains. Ils sont laissés tels quels, donc lus à la manière de la voix.
+- Portée (étendue le 2026-11-01 sur demande de JF : pour ces élèves, la lecture doit être conforme au programme) :
+  - entiers de 0 à 999 999 999 999, écrits en chiffres seuls ou en groupes séparés par une espace, une espace insécable ou un point (« 75 000 », « 75.000 », « 1 000 000 » → « un million », « 3 000 000 000 » → « trois milliards ») ;
+  - décimaux à virgule : « 3,5 » → « trois virgule cinq », « 1,70 » → « un virgule septante », « 1,05 » → « un virgule zéro cinq » ; au-delà de trois décimales, chiffre par chiffre ;
+  - euros : « 1,70 € » → « un euro septante », « 2,50 € » → « deux euros cinquante », « 5 € » → « cinq euros » ; pourcentages : « 50 % » → « cinquante pour cent » ;
+  - ordinaux : « 1er » → « premier », « 1re » → « première », « 2e » → « deuxième », « 71e » → « septante et unième », « 80e » → « quatre-vingtième », « 90e » → « nonantième », avec pluriel (« 2es ») ;
+  - périodes : « 1990-2024 » → « mille neuf cent nonante à deux mille vingt-quatre » (tiret collé à deux nombres) ;
+  - dates complètes : « 16/11/2024 » → « seize novembre deux mille vingt-quatre », « 1/2/2025 » → « premier février deux mille vingt-cinq » ;
+  - heures : « 9 h 30 », « 14h05 », « 10:30 » → « neuf heures trente », « quatorze heures cinq », « dix heures trente » ; « 1 h » → « une heure ».
+- Formes : 70 « septante », 90 « nonante », 80 « quatre-vingts » (« quatre-vingt » devant un autre nombre). « et un » pour 21, 31, 41, 51, 61, 71, 91 ; pas de « et » pour 81 (« quatre-vingt-un »). Pluriel de « cent » sauf devant un autre nombre (« deux cents », « deux cent un »). « Million » et « milliard » prennent le « s » (« quatre-vingts millions »).
+- Laissés tels quels : nombres collés à des lettres (« A4 »), nombres à zéro initial (« 007 »), nombres de plus de 12 chiffres, décimaux à point (« 3.5 »), dates sans année (« 16/11 », « 1/2 » : une fraction est possible), heures ou minutes impossibles (« 10:70 »).
+- Pas de lookbehind dans les expressions régulières (iOS avant 16.4 refuse de charger un fichier qui en contient) : un test l'interdit.
+- Limites (à dire aux enseignant(e)s) : les unités (« km », « g », « cm », « l ») et les numéros de téléphone ne sont pas traités ; leur lecture dépend de la voix.
+- Le texte converti est celui qui sert de clé de cache audio, avec la voix. Le texte affiché à l'élève n'est jamais modifié.
+- Réalisation : plan 3 (voix), fonction pure `numbersToBelgianWords(text: string): string` testée avant toute synthèse.
 - Constaté par JF à l'oreille le 2026-11-01 : ni Adrien ni Christophe Géradon (voix belges) ne lisent « 70 » et « 90 » en chiffres à la belge. Le passage chiffres vers mots dépend du modèle, pas de l'accent de la voix : la conversion par notre code est donc obligatoire, pour toutes les voix.
 - Réalisation : plan 3 (voix), avec la fonction pure `numbersToBelgianWords(text: string): string` testée avant toute synthèse.
 

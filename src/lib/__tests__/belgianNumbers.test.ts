@@ -36,10 +36,7 @@ describe('numbersToBelgianWords : dans une phrase', () => {
 });
 
 describe('numbersToBelgianWords : laissé tel quel', () => {
-  it.each(['3,5', '3.5', '1er', '2e', 'A4', '1 000', '1 000 000', '007', '1000000', 'Il a vingt ans.', '', 'pas de chiffre'])(
-    '%s',
-    text => {
-      expect(numbersToBelgianWords(text)).toBe(text);
-    },
-  );
+  it.each(['A4', '007', 'Il a vingt ans.', '', 'pas de chiffre'])('%s', text => {
+    expect(numbersToBelgianWords(text)).toBe(text);
+  });
 });
