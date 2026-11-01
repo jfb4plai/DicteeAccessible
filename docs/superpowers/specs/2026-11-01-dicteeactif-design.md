@@ -88,6 +88,7 @@ Option par session. Si l'élève l'utilise : le mot est signalé à l'enseignant
 
 - Voix belge via ElevenLabs. Audio généré une fois, mis en cache (clé = texte + voix), servi ensuite sans nouvel appel.
 - **[Hypothèse]** Une voix belge adaptée existe et son usage est autorisé par la licence et le tarif : non vérifié. À contrôler par un script local (JF a la clé ; elle n'est jamais collée dans le code ni dans le chat).
+- Voix retenues par JF (2026-11-01) : Adrien (voix belge du compte) ou « jef » (voix clonée de JF, catégorie « cloned » ; la voix « JF » du compte est « generated », donc distincte). Choix par défaut à fixer avant le plan 3 ; la voix reste réglable par l'enseignant(e). Écartées : Christophe Géradon, Léa, Anaïs, Sand (essais du 2026-11-01).
 - Repli : voix du navigateur (comme Dictée Interactive, `speech.ts`) si l'audio est indisponible.
 - La lecture à haute voix des consignes est facultative pour l'élève. **[JF]**
 
