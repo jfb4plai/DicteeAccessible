@@ -103,6 +103,18 @@ Avant tout appel de synthèse vocale, le serveur remplace chaque nombre écrit e
 - Constaté par JF à l'oreille le 2026-11-01 : ni Adrien ni Christophe Géradon (voix belges) ne lisent « 70 » et « 90 » en chiffres à la belge. Le passage chiffres vers mots dépend du modèle, pas de l'accent de la voix : la conversion par notre code est donc obligatoire, pour toutes les voix.
 - Réalisation : plan 3 (voix), avec la fonction pure `numbersToBelgianWords(text: string): string` testée avant toute synthèse.
 
+### 6.2 Lexique de prononciation belge **[JF]**, ajouté le 2026-11-01
+
+Constaté à l'oreille par JF (2026-11-01) : avec Adrien et Christophe Géradon, « wagon » est lu « vagon » et « 90 » à la française ; seule la version réécrite (« ouagon », « Ouallonie », « ouallon ») est correcte. Le modèle applique la norme française, l'accent de la voix n'y change rien. Même remède que pour les nombres : changer le texte envoyé, jamais le texte affiché.
+
+- Fonction pure `toBelgianSpeech(text: string): string` = `numbersToBelgianWords` (§6.1) puis remplacement des mots du lexique. Elle est appelée avant le calcul de la clé de cache audio et avant l'appel à ElevenLabs.
+- Lexique de départ (mots entiers, sans tenir compte de la casse, majuscule initiale conservée, pluriels et féminins inclus) : wagon, wagons → ouagon, ouagons ; Wallonie → Ouallonie ; wallon, wallons, wallonne, wallonnes → ouallon, ouallons, ouallonne, ouallonnes. Constaté par JF pour wagon, Wallonie et wallon (version réécrite correcte).
+- Non testé : « week-end » (le « w » est déjà /w/ en France). Tout autre mot en « w » est laissé tel quel tant qu'il n'est pas validé à l'oreille.
+- Chaque entrée est validée à l'oreille par JF ou une enseignante belge avant d'entrer dans le lexique ; le lexique est un fichier de données, pas du code.
+- Tests : « Un wagon. » → « Un ouagon. » ; « La Wallonie » → « La Ouallonie » ; « Wagons » → « Ouagons » ; « kiwi » inchangé ; « Il a 90 ans, un wagon. » → « Il a nonante ans, un ouagon. ».
+- Hors décision (à proposer plus tard) : corrections de prononciation ajoutées par l'enseignant(e), dictée par dictée.
+
+
 ## 7. Clés **[JF]**
 
 - v1 : clé PLAI côté serveur, avec un plafond de requêtes par enseignant (valeur à fixer, **[Mon choix]** : plafond journalier modeste, message clair quand il est atteint).
