@@ -8,6 +8,7 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import PupilsPage from './pages/PupilsPage';
 import NewSession from './pages/NewSession';
 import SessionResults from './pages/SessionResults';
+import SessionSentences from './pages/SessionSentences';
 import PupilEntry from './pages/PupilEntry';
 import PupilExercise from './pages/PupilExercise';
 
@@ -23,6 +24,7 @@ function App() {
           <Route path="/enseignant/dashboard" element={<ProtectedRoute><TeacherDashboard /></ProtectedRoute>} />
           <Route path="/enseignant/eleves" element={<ProtectedRoute><PupilsPage /></ProtectedRoute>} />
           <Route path="/enseignant/session/nouvelle" element={<ProtectedRoute><NewSession /></ProtectedRoute>} />
+          <Route path="/enseignant/session/:id/phrases" element={<ProtectedRoute><SessionSentences /></ProtectedRoute>} />
           <Route path="/enseignant/resultats/:sessionId" element={<ProtectedRoute><SessionResults /></ProtectedRoute>} />
           <Route path="/eleve" element={<PupilEntry />} />
           <Route path="/eleve/jeu" element={<PupilExercise />} />

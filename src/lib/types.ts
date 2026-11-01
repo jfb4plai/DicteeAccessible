@@ -29,11 +29,14 @@ export type OpenedSession = {
 
 export type Pupil = { id: string; code: string };
 
+export type Contents = 'words' | 'words+sentences' | 'sentences';
+
 export type SessionInput = {
   title: string;
   level: 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'P6';
   mode: 'autonomy' | 'class';
   words: string[];
+  contents: Contents;
   pupilIds: string[];
   options: SessionOptions;
 };

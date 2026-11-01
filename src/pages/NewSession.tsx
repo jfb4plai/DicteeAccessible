@@ -1,33 +1,20 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import QRCode from 'qrcode';
+import { Link, useNavigate } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
+import PupilLinks from '../components/PupilLinks';
 import { createSession, listPupils } from '../lib/api';
 import { validateSessionInput } from '../lib/sessionForm';
-import type { Pupil, SessionOptions } from '../lib/types';
+import type { Contents, Pupil, SessionOptions } from '../lib/types';
 
 const DEFAULTS: Record<'autonomy' | 'class', SessionOptions> = {
   autonomy: { showCorrect: true, readAloud: true, finalRound: true },
   class: { showCorrect: false, readAloud: true, finalRound: true },
 };
 
-function PupilLink({ accessCode, pupil }: { accessCode: string; pupil: Pupil }) {
-  const url = `${window.location.origin}/eleve/jeu?session=${accessCode}&eleve=${pupil.code}`;
-  const [qr, setQr] = useState('');
-  useEffect(() => { QRCode.toDataURL(url, { margin: 1, width: 140 }).then(setQr).catch(() => setQr('')); }, [url]);
-  return (
-    <div className="plai-card flex items-center gap-4">
-      {qr && <img src={qr} alt={`QR code de ${pupil.code}`} width={96} height={96} />}
-      <div style={{ minWidth: 0 }}>
-        <strong>{pupil.code}</strong>
-        <p className="help" style={{ wordBreak: 'break-all' }}>{url}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function NewSession() {
+  const navigate = useNavigate();
+  const [contents, setContents] = useState<Contents>('words');
   const [pupils, setPupils] = useState<Pupil[]>([]);
   const [title, setTitle] = useState('');
   const [level, setLevel] = useState('P3');
@@ -55,13 +42,17 @@ export default function NewSession() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setFailure('');
-    const result = validateSessionInput({ title, level, mode, wordsText, pupilIds, options });
+    const result = validateSessionInput({ title, level, mode, wordsText, contents, pupilIds, options });
     if (!result.ok) { setErrors(result.errors); return; }
     setErrors({});
     setDuplicates(result.duplicates);
     setBusy(true);
     try {
-      const { accessCode } = await createSession(result.value);
+      const { id, accessCode } = await createSession(result.value);
+      if (result.value.contents !== 'words') {
+        navigate(`/enseignant/session/${id}/phrases`); // brouillon : les phrases sont à relire avant publication
+        return;
+      }
       setCreated({ accessCode, pupils: pupils.filter(p => pupilIds.includes(p.id)) });
     } catch (err) {
       setFailure((err as Error).message);
@@ -75,9 +66,7 @@ export default function NewSession() {
         <h1 className="text-3xl mb-2">Dictée créée</h1>
         <p className="plai-success">Code de la dictée : <strong style={{ fontSize: 24 }}>{created.accessCode}</strong></p>
         <p className="help mb-4">Donner à chaque élève son lien ou son QR code. Le lien contient seulement le code de la dictée et le code de l'élève, jamais un prénom.</p>
-        <div className="grid md:grid-cols-2 gap-3">
-          {created.pupils.map(p => <PupilLink key={p.id} accessCode={created.accessCode} pupil={p} />)}
-        </div>
+        <PupilLinks accessCode={created.accessCode} pupils={created.pupils} />
         <p className="mt-4"><Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link></p>
       </PageShell>
     );
@@ -89,6 +78,18 @@ export default function NewSession() {
       <form onSubmit={submit} noValidate>
         <section className="plai-card">
           <h2 className="text-xl mb-3">1. Les mots</h2>
+          <fieldset className="plai-field">
+            <legend className="plai-label">Contenu de la dictée</legend>
+            {([['words', 'Des mots', "L'élève place les lettres de chaque mot."],
+               ['words+sentences', 'Des mots et des phrases', "Les mots d'abord, puis des phrases proposées par l'IA que tu relis et valides."],
+               ['sentences', 'Des phrases seulement', "Autodictée : tu écris tes phrases ou l'IA en propose, tu valides chacune."]] as const).map(([value, label, help]) => (
+              <label key={value} style={{ display: 'block', marginBottom: 6 }}>
+                <input type="radio" name="contents" checked={contents === value} onChange={() => setContents(value)} /> <strong>{label}</strong>
+                <span className="help" style={{ display: 'block', marginLeft: 24 }}>{help}</span>
+              </label>
+            ))}
+            {errors.contents && <p className="plai-error">{errors.contents}</p>}
+          </fieldset>
           <div className="plai-field">
             <label className="plai-label" htmlFor="title">Titre de la dictée</label>
             <input id="title" className="plai-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Exemple : Dictée de mots du 16/11" />
@@ -107,7 +108,7 @@ export default function NewSession() {
             <label className="plai-label" htmlFor="words">Mots de la dictée</label>
             <textarea id="words" rows={5} className="plai-input" value={wordsText} onChange={e => setWordsText(e.target.value)}
               placeholder="monsieur – droit – lendemain – chaque – paire – boite – quelques" />
-            <p className="help">Séparer les mots par un tiret entouré d'espaces, une virgule ou un retour à la ligne. Chaque mot devient un exercice, 40 mots au maximum.</p>
+            <p className="help">{contents === 'sentences' ? 'Facultatif pour une autodictée : ces mots servent à vérifier que l\'élève les connaît avant les phrases.' : 'Séparer les mots par un tiret entouré d\'espaces, une virgule ou un retour à la ligne. Chaque mot devient un exercice, 40 mots au maximum.'}</p>
             {errors.words && <p className="plai-error">{errors.words}</p>}
             {duplicates.length > 0 && <p className="help">Doublons ignorés : {duplicates.join(', ')}.</p>}
           </div>
@@ -156,7 +157,7 @@ export default function NewSession() {
           )}
           {errors.pupils && <p className="plai-error">{errors.pupils}</p>}
           {failure && <p className="plai-error">{failure}</p>}
-          <button type="submit" className="plai-btn mt-3" disabled={busy}>Publier la dictée</button>
+          <button type="submit" className="plai-btn mt-3" disabled={busy}>{contents === 'words' ? 'Publier la dictée' : 'Continuer vers les phrases'}</button>
         </section>
       </form>
     </PageShell>

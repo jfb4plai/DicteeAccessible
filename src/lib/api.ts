@@ -1,8 +1,9 @@
 import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession } from './apiMapping';
+import type { GenerateInput, GeneratedSentence } from './sentenceGeneration.js';
 import type {
-  AttemptRow, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
+  AttemptRow, DictaSentence, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
 } from './types';
 
 const PAGE = 1000;
@@ -106,6 +107,7 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
         show_correct: input.options.showCorrect,
         read_aloud: input.options.readAloud,
         final_round: input.options.finalRound,
+        published: input.contents === 'words', // avec des phrases : brouillon jusqu'à la validation
       })
       .select('id, access_code')
       .single();
@@ -114,9 +116,11 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
   }
   if (!session) fail('Création de la dictée impossible.');
 
-  const items = await supabase
-    .from('dicta_items')
-    .insert(input.words.map((word, position) => ({ session_id: session!.id, word, position })));
+  const items = input.words.length === 0
+    ? { error: null }
+    : await supabase
+        .from('dicta_items')
+        .insert(input.words.map((word, position) => ({ session_id: session!.id, word, position })));
   const pupils = await supabase
     .from('dicta_session_pupils')
     .insert(input.pupilIds.map(pupil_id => ({ session_id: session!.id, pupil_id })));
@@ -193,4 +197,91 @@ export async function saveComment(sessionId: string, c: CommentRow): Promise<voi
     { onConflict: 'session_id,pupil_id' },
   );
   if (error) fail('Commentaire non enregistré.');
+}
+
+// ---------- Phrases (enseignant(e)) ----------
+
+export async function generateSentences(input: GenerateInput): Promise<{ sentences: GeneratedSentence[]; missing: string[] }> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) fail('Connexion requise.');
+  let response: Response;
+  try {
+    response = await fetch('/api/generate-sentences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    fail("La proposition automatique n'est pas disponible. Écris tes phrases toi-même.");
+  }
+  if (response.status === 429) fail('Plafond du jour atteint. Écris tes phrases toi-même ou reviens demain.');
+  if (!response.ok) fail("La proposition automatique n'est pas disponible. Écris tes phrases toi-même.");
+  return response.json();
+}
+
+export async function getSessionForEdit(sessionId: string): Promise<{
+  title: string; level: string; mode: 'autonomy' | 'class'; published: boolean; accessCode: string;
+  items: DictaItem[]; pupils: Pupil[];
+}> {
+  const [session, items, links] = await Promise.all([
+    supabase.from('dicta_sessions').select('title, level, mode, published, access_code').eq('id', sessionId).single(),
+    supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
+    supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
+  ]);
+  if (session.error || items.error || links.error) fail('Dictée introuvable.');
+  return {
+    title: session.data.title,
+    level: session.data.level,
+    mode: session.data.mode,
+    published: session.data.published,
+    accessCode: session.data.access_code,
+    items: items.data as DictaItem[],
+    pupils: (links.data as any[]).map(l => l.dicta_pupils as Pupil).sort(byCodeNumber),
+  };
+}
+
+export async function listSentences(sessionId: string): Promise<(DictaSentence & { validated: boolean })[]> {
+  const { data, error } = await supabase
+    .from('dicta_sentences')
+    .select('id, position, text, parasites, item_id, validated')
+    .eq('session_id', sessionId)
+    .order('position');
+  if (error) fail('Phrases indisponibles.');
+  return (data as any[]).map(r => ({
+    id: r.id, position: r.position, text: r.text, parasites: r.parasites ?? [], itemId: r.item_id, validated: r.validated,
+  }));
+}
+
+// Enregistre d'abord (mise à jour et ajouts), supprime ensuite les phrases retirées : rien n'est perdu si une étape échoue.
+export async function saveSentences(
+  sessionId: string,
+  sentences: { id?: string; text: string; parasites: string[]; itemId: string | null; validated: boolean }[],
+): Promise<void> {
+  const existing = await listSentences(sessionId);
+  const rows = sentences.map((s, position) => ({
+    ...(s.id && { id: s.id }),
+    session_id: sessionId, position, text: s.text, parasites: s.parasites, item_id: s.itemId, validated: s.validated,
+  }));
+  const updated = rows.filter(r => 'id' in r);
+  const added = rows.filter(r => !('id' in r));
+  if (updated.length > 0) {
+    const { error } = await supabase.from('dicta_sentences').upsert(updated);
+    if (error) fail('Phrases non enregistrées.');
+  }
+  if (added.length > 0) {
+    const { error } = await supabase.from('dicta_sentences').insert(added);
+    if (error) fail('Phrases non enregistrées.');
+  }
+  const keep = new Set(sentences.map(s => s.id).filter(Boolean));
+  const removed = existing.filter(e => !keep.has(e.id)).map(e => e.id);
+  if (removed.length > 0) {
+    const { error } = await supabase.from('dicta_sentences').delete().in('id', removed);
+    if (error) fail('Phrases non enregistrées.');
+  }
+}
+
+export async function publishSession(sessionId: string): Promise<void> {
+  const { error } = await supabase.from('dicta_sessions').update({ published: true }).eq('id', sessionId);
+  if (error) fail(error.message.includes('sentences_not_validated') ? 'Valide toutes les phrases avant de publier.' : 'Publication impossible.');
 }
