@@ -54,6 +54,12 @@ begin
   r := dicta_record_sentence_attempt('SENTAA', 'E1', '00000000-0000-0000-0000-0000000000e1', 'B2', '  le  VENT a soufflé   fort. ', 0);
   if (r->>'correct')::boolean is not true then raise exception 'espaces et casse tolérés, reçu %', r; end if;
 
+  -- 4 bis. espace insécable et apostrophe typographique : même jugement que le navigateur
+  insert into dicta_sentences (id, session_id, position, text, validated) values
+    ('00000000-0000-0000-0000-0000000000e4', '00000000-0000-0000-0000-0000000000c1', 2, 'Où vas-tu ?' || chr(160) || 'L’été est là.', true);
+  r := dicta_record_sentence_attempt('SENTAA', 'E1', '00000000-0000-0000-0000-0000000000e4', 'B2', 'Où vas-tu ? L''été est là.', 0);
+  if (r->>'correct')::boolean is not true then raise exception 'espace insécable et apostrophe typographique : attendu juste, reçu %', r; end if;
+
   -- 5. phrase d'une autre dictée refusée
   begin
     perform dicta_record_sentence_attempt('SENTAA', 'E1', '00000000-0000-0000-0000-0000000000e2', 'B2', 'Autre phrase.', 0);
@@ -80,7 +86,7 @@ begin
 
   -- 8. les lignes de phrase figurent dans les essais renvoyés
   r := dicta_open_session('SENTAA', 'E1');
-  if jsonb_array_length(r->'attempts') <> 3 then raise exception '3 essais attendus, reçu %', jsonb_array_length(r->'attempts'); end if;
+  if jsonb_array_length(r->'attempts') <> 4 then raise exception '4 essais attendus, reçu %', jsonb_array_length(r->'attempts'); end if;
   if r->'attempts'->0->>'sentence_id' is null then raise exception 'sentence_id attendu dans les essais'; end if;
 end $$;
 

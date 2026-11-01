@@ -47,6 +47,7 @@ export type SessionListItem = {
   level: string;
   mode: string;
   accessCode: string;
+  published: boolean;
   wordCount: number;
   pupilCount: number;
   createdAt: string;

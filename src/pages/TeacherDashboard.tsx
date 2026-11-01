@@ -29,10 +29,19 @@ export default function TeacherDashboard() {
           <div>
             <h2 className="text-xl">{s.title}</h2>
             <p className="help">
-              {s.level} · {s.mode === 'class' ? 'dictée en classe' : 'préparation en autonomie'} · {s.wordCount} mots · {s.pupilCount} élèves · code {s.accessCode}
+              {s.level} · {s.mode === 'class' ? 'dictée en classe' : 'préparation en autonomie'} · {s.wordCount} mots · {s.pupilCount} élèves · {s.published ? `code ${s.accessCode}` : 'brouillon, pas encore publié'}
             </p>
           </div>
-          <Link to={`/enseignant/resultats/${s.id}`} className="plai-btn-ghost no-underline inline-flex items-center">Voir les résultats</Link>
+          <div className="flex flex-wrap gap-2">
+            {s.published ? (
+              <>
+                <Link to={`/enseignant/session/${s.id}/phrases`} className="plai-btn-ghost no-underline inline-flex items-center">Phrases et liens</Link>
+                <Link to={`/enseignant/resultats/${s.id}`} className="plai-btn-ghost no-underline inline-flex items-center">Voir les résultats</Link>
+              </>
+            ) : (
+              <Link to={`/enseignant/session/${s.id}/phrases`} className="plai-btn no-underline inline-flex items-center">Reprendre les phrases</Link>
+            )}
+          </div>
         </div>
       ))}
     </PageShell>

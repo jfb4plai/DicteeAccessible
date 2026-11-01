@@ -74,6 +74,19 @@ export function sentenceUnlocked(sentence: DictaSentence, items: DictaItem[], ro
     .every(item => rows.some(r => r.itemId === item.id && r.stage === 'A' && r.kind === 'attempt' && r.correct === true));
 }
 
+// Mots à majuscule hors début de phrase : prénoms ou noms propres possibles. Un prénom en tout début de texte
+// ne se distingue pas d'un mot ordinaire : l'aide du champ le rappelle.
+export function capitalizedWords(text: string): string[] {
+  const tokens = tokenizeSentence(text);
+  const found: string[] = [];
+  tokens.forEach((token, i) => {
+    const atStart = i === 0 || /[.!?…]$/.test(tokens[i - 1]);
+    const clean = stripPunctuation(token);
+    if (!atStart && /^\p{Lu}/u.test(clean)) found.push(clean);
+  });
+  return found;
+}
+
 export function maxWords(level: string): number {
   return MAX_WORDS[level] ?? MAX_WORDS.P6;
 }

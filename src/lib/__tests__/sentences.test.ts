@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   tokenizeSentence, stripPunctuation, containsWord, filterParasites, isCorrectSentenceAnswer,
-  buildSentenceTiles, sentenceUnlocked, maxWords, sentenceTooLong, sentenceForStage,
+  buildSentenceTiles, sentenceUnlocked, maxWords, sentenceTooLong, sentenceForStage, capitalizedWords,
 } from '../sentences';
 import type { AttemptRow, DictaItem, DictaSentence } from '../types';
 
@@ -105,5 +105,17 @@ describe('sentenceForStage', () => {
   });
   it('B2 : les parasites sont mêlés aux tuiles', () => {
     expect(sentenceForStage(s, 'B2').parasites).toEqual(['dormir', 'dormez']);
+  });
+});
+
+describe('capitalizedWords', () => {
+  it('relève les mots à majuscule hors début de phrase (prénoms et noms propres possibles)', () => {
+    expect(capitalizedWords('Tom et Inès préparent la sortie au parc de la Boverie')).toEqual(['Inès', 'Boverie']);
+  });
+  it('ignore le premier mot et ceux qui suivent une fin de phrase', () => {
+    expect(capitalizedWords('La classe sort. Elle part demain.')).toEqual([]);
+  });
+  it('renvoie une liste vide pour un texte vide', () => {
+    expect(capitalizedWords('')).toEqual([]);
   });
 });

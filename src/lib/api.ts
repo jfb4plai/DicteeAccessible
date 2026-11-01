@@ -135,7 +135,7 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
 export async function listSessions(): Promise<SessionListItem[]> {
   const { data, error } = await supabase
     .from('dicta_sessions')
-    .select('id, title, level, mode, access_code, created_at, dicta_items(count), dicta_session_pupils(count)')
+    .select('id, title, level, mode, access_code, published, created_at, dicta_items(count), dicta_session_pupils(count)')
     .order('created_at', { ascending: false });
   if (error) fail('Liste des dictées indisponible.');
   return (data as any[]).map(r => ({
@@ -144,6 +144,7 @@ export async function listSessions(): Promise<SessionListItem[]> {
     level: r.level,
     mode: r.mode,
     accessCode: r.access_code,
+    published: r.published,
     wordCount: r.dicta_items?.[0]?.count ?? 0,
     pupilCount: r.dicta_session_pupils?.[0]?.count ?? 0,
     createdAt: r.created_at,

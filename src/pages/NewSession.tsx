@@ -101,7 +101,7 @@ export default function NewSession() {
             <select id="level" className="plai-input" value={level} onChange={e => setLevel(e.target.value)}>
               {['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].map(l => <option key={l}>{l}</option>)}
             </select>
-            <p className="help">Classe la dictée dans tes résultats. Les phrases adaptées au niveau arrivent dans une prochaine version.</p>
+            <p className="help">Classe la dictée dans tes résultats et fixe la longueur maximale des phrases proposées par l'IA (P1 : 6 mots, P6 : 16).</p>
             {errors.level && <p className="plai-error">{errors.level}</p>}
           </div>
           <div className="plai-field">

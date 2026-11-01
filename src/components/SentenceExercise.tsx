@@ -109,7 +109,7 @@ export default function SentenceExercise(p: Props) {
             type="button"
             disabled={locked}
             onClick={() => dispatch({ type: 'place', poolIndex: i })}
-            style={{ ...tileStyle, color: '#fff', background: '#f97316', border: 'none' }}
+            style={{ ...tileStyle, color: '#1a1814', background: '#f97316', border: 'none' }}
           >
             {tile.text}
           </button>

@@ -47,7 +47,7 @@ export default function LetterBoard({ state, onPlace, onUnplace, onValidate, onR
             type="button"
             disabled={locked}
             onClick={() => onPlace(i)}
-            style={{ width: 56, height: 64, fontSize: 28, fontWeight: 700, color: '#fff', background: '#f97316', borderRadius: 8, border: 'none' }}
+            style={{ width: 56, height: 64, fontSize: 28, fontWeight: 700, color: '#1a1814', background: '#f97316', borderRadius: 8, border: 'none' }}
           >
             {letter}
           </button>

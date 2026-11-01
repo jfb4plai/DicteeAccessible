@@ -144,9 +144,10 @@ begin
     raise exception 'limit_reached';
   end if;
 
-  -- Même normalisation que le navigateur : forme composée, minuscules, une seule apostrophe, espaces simples.
-  ok := lower(replace(normalize(regexp_replace(btrim(coalesce(p_answer, '')), '\s+', ' ', 'g'), NFC), '’', ''''))
-      = lower(replace(normalize(regexp_replace(btrim(st.text), '\s+', ' ', 'g'), NFC), '’', ''''));
+  -- Même normalisation que le navigateur : forme composée, minuscules, une seule apostrophe, espaces simples
+  -- (espaces insécables U+00A0 et U+202F compris : le navigateur les traite comme des espaces).
+  ok := lower(replace(normalize(regexp_replace(btrim(coalesce(p_answer, '')), '[\s\u00a0\u202f]+', ' ', 'g'), NFC), '’', ''''))
+      = lower(replace(normalize(regexp_replace(btrim(st.text), '[\s\u00a0\u202f]+', ' ', 'g'), NFC), '’', ''''));
 
   select count(*) + 1 into n
   from dicta_attempts
