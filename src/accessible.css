@@ -12,3 +12,5 @@ h1, h2, h3, .plai-nav-logo, .plai-section h2, .plai-empty { font-family: 'DM San
 .dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; flex: none; }
 .dot-green { background: #16a34a; } .dot-orange { background: #f97316; } .dot-red { background: #dc2626; } .dot-grey { background: #9ca3af; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* Les cartes d'une grille restent alignées (la marge entre cartes empilées ne s'applique pas). */
+.grid > .plai-card { margin-top: 0 !important; }

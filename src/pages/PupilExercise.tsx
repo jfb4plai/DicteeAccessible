@@ -98,7 +98,7 @@ export default function PupilExercise() {
     return (
       <PageShell>
         <p className="plai-error">
-          {error === 'Code inconnu' ? 'Code inconnu. Vérifier les deux codes avec ton enseignante.' : error}
+          {error === 'Code inconnu' ? 'Code inconnu. Vérifier les deux codes avec ton enseignant(e).' : error}
         </p>
         <Link to="/eleve" className="plai-btn-ghost inline-block no-underline">Revenir aux codes</Link>
       </PageShell>
@@ -115,7 +115,7 @@ export default function PupilExercise() {
       <PageShell>
         {pendingBanner}
         <h1 className="text-3xl mb-2">Dictée terminée</h1>
-        <p className="mb-4">Merci. Ton enseignante lira tes réponses.</p>
+        <p className="mb-4">Merci. Ton enseignant(e) lira tes réponses.</p>
         <Link to="/" className="plai-btn-ghost inline-block no-underline">Revenir à l'accueil</Link>
       </PageShell>
     );

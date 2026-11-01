@@ -24,7 +24,7 @@ export default function PupilEntry() {
           <label className="plai-label" htmlFor="session-code">Code de la dictée</label>
           <input id="session-code" className="plai-input" value={sessionCode} onChange={e => setSessionCode(e.target.value)}
             placeholder="Exemple : K7M2QX" autoComplete="off" autoCapitalize="characters" />
-          <p className="help">Ton enseignante donne ce code. Il a 6 caractères.</p>
+          <p className="help">Ton enseignant(e) donne ce code. Il a 6 caractères.</p>
         </div>
         <div className="plai-field">
           <label className="plai-label" htmlFor="pupil-code">Ton code personnel</label>
