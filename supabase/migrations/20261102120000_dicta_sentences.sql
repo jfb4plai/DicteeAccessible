@@ -216,3 +216,6 @@ $$;
 
 revoke all on function dicta_ai_take(int) from public, anon;
 grant execute on function dicta_ai_take(int) to authenticated;
+
+-- La fonction du déclencheur n'est pas appelable directement ; on retire quand même le droit par défaut de PUBLIC.
+revoke all on function dicta_publish_guard() from public, anon, authenticated;
