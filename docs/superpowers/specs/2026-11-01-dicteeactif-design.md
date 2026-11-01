@@ -100,6 +100,7 @@ Avant tout appel de synthèse vocale, le serveur remplace chaque nombre écrit e
 - Exemples attendus (tests) : 70 → septante ; 71 → septante et un ; 72 → septante-deux ; 79 → septante-neuf ; 80 → quatre-vingts ; 81 → quatre-vingt-un ; 90 → nonante ; 91 → nonante et un ; 99 → nonante-neuf ; 100 → cent ; 101 → cent un ; 170 → cent septante ; 190 → cent nonante ; 200 → deux cents ; 1990 → mille neuf cent nonante ; « Il a 90 ans. » → « Il a nonante ans. ».
 - Le texte converti est celui qui sert de clé de cache audio (texte + voix). Le texte affiché à l'élève n'est jamais modifié.
 - Hors portée v1 : décimaux, ordinaux (« 1er »), nombres écrits « 1 000 » ou « 1.000 », romains. Ils sont laissés tels quels, donc lus à la manière de la voix.
+- Constaté par JF à l'oreille le 2026-11-01 : ni Adrien ni Christophe Géradon (voix belges) ne lisent « 70 » et « 90 » en chiffres à la belge. Le passage chiffres vers mots dépend du modèle, pas de l'accent de la voix : la conversion par notre code est donc obligatoire, pour toutes les voix.
 - Réalisation : plan 3 (voix), avec la fonction pure `numbersToBelgianWords(text: string): string` testée avant toute synthèse.
 
 ## 7. Clés **[JF]**
