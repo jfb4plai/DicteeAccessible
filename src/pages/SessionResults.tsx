@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import { getPupilAttempts, getResults, saveComment } from '../lib/api';
-import { summarizeItem, summarizeSession, type ItemSummary } from '../lib/progress';
+import { summarizeItem, summarizeSentence, summarizeSession, type ItemSummary, type SentenceSummary } from '../lib/progress';
 import { upsertComment } from '../lib/comments';
 import type { AttemptRow } from '../lib/types';
 
@@ -46,6 +46,11 @@ export default function SessionResults() {
   const summaries: ItemSummary[] = useMemo(() => {
     if (!data || !detailRows) return [];
     return data.items.map(i => summarizeItem(i, detailRows, data.options.finalRound));
+  }, [data, detailRows]);
+
+  const sentenceSummaries: SentenceSummary[] = useMemo(() => {
+    if (!data || !detailRows) return [];
+    return data.sentences.map(s => summarizeSentence(s, detailRows, data.mode));
   }, [data, detailRows]);
 
   async function save() {
@@ -108,6 +113,26 @@ export default function SessionResults() {
                         <p><strong>Écrit au 1er essai :</strong> {s.firstAnswer ?? 'aucun'}</p>
                         <p><strong>Essais :</strong> {s.attemptsA} · <strong>Écoutes :</strong> {s.listens}{s.helpUsed ? ' · bonne orthographe montrée' : ''}</p>
                         {s.screenshots.map((src, i) => <img key={i} src={src} alt={`Capture de l'erreur ${i + 1} pour ${s.word}`} style={{ maxWidth: 360, border: '1px solid var(--border)', marginTop: 6 }} />)}
+                      </div>
+                    </details>
+                  ))}
+                </>
+              )}
+
+              {detailRows && detailRows.length > 0 && (
+                <>
+                  <h3 className="text-lg mt-4 mb-1">Phrases</h3>
+                  {sentenceSummaries.length === 0 && <p className="help">Aucune phrase dans cette dictée.</p>}
+                  {sentenceSummaries.map(s => (
+                    <details key={s.sentenceId} className="py-2" style={{ borderBottom: '1px solid var(--border)' }}>
+                      <summary style={{ cursor: 'pointer', minHeight: 40, display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span className={`dot dot-${s.status}`} aria-hidden="true" />
+                        <strong>{s.text}</strong>
+                        <span>{s.label}</span>
+                      </summary>
+                      <div className="help" style={{ margin: '8px 0 4px 26px' }}>
+                        <p><strong>Écrit au 1er essai :</strong> {s.firstAnswer ?? 'aucun'}</p>
+                        <p><strong>Essais en B2 :</strong> {s.attempts}</p>
                       </div>
                     </details>
                   ))}

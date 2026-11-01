@@ -151,7 +151,7 @@ export async function listSessions(): Promise<SessionListItem[]> {
 }
 
 async function fetchAttempts(sessionId: string, pupilId: string | null, withScreenshot: boolean) {
-  const columns = 'pupil_id, item_id, stage, kind, attempt_number, answer, correct, listens' + (withScreenshot ? ', screenshot' : '');
+  const columns = 'pupil_id, item_id, sentence_id, stage, kind, attempt_number, answer, correct, listens' + (withScreenshot ? ', screenshot' : '');
   const rows: (AttemptRow & { pupilId: string })[] = [];
   for (let from = 0; ; from += PAGE) {
     let query = supabase.from('dicta_attempts').select(columns).eq('session_id', sessionId);
@@ -164,19 +164,22 @@ async function fetchAttempts(sessionId: string, pupilId: string | null, withScre
 }
 
 export async function getResults(sessionId: string): Promise<{
-  title: string; options: SessionOptions; items: DictaItem[]; pupils: Pupil[];
+  title: string; mode: 'autonomy' | 'class'; options: SessionOptions; items: DictaItem[]; sentences: DictaSentence[]; pupils: Pupil[];
   attempts: (AttemptRow & { pupilId: string })[]; comments: CommentRow[];
 }> {
-  const [session, items, links, comments, attempts] = await Promise.all([
-    supabase.from('dicta_sessions').select('title, show_correct, read_aloud, final_round').eq('id', sessionId).single(),
+  const [session, items, links, comments, attempts, sentences] = await Promise.all([
+    supabase.from('dicta_sessions').select('title, mode, show_correct, read_aloud, final_round').eq('id', sessionId).single(),
     supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
     supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
     supabase.from('dicta_comments').select('pupil_id, body, visible').eq('session_id', sessionId),
     fetchAttempts(sessionId, null, false),
+    supabase.from('dicta_sentences').select('id, position, text, parasites, item_id').eq('session_id', sessionId).order('position'),
   ]);
-  if (session.error || items.error || links.error || comments.error) fail('Résultats indisponibles.');
+  if (session.error || items.error || links.error || comments.error || sentences.error) fail('Résultats indisponibles.');
   return {
     title: session.data.title,
+    mode: session.data.mode,
+    sentences: (sentences.data as any[]).map(r => ({ id: r.id, position: r.position, text: r.text, parasites: r.parasites ?? [], itemId: r.item_id })),
     options: { showCorrect: session.data.show_correct, readAloud: session.data.read_aloud, finalRound: session.data.final_round },
     items: items.data as DictaItem[],
     pupils: (links.data as any[]).map(l => l.dicta_pupils as Pupil).sort(byCodeNumber),
