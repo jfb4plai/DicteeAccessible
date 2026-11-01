@@ -22,9 +22,10 @@ export default function PupilsPage() {
     setBusy(true);
     setError('');
     try {
-      const codes = nextPupilCodes((pupils ?? []).map(p => p.code), n);
-      const created = await createPupils(codes);
-      setPupils(prev => [...(prev ?? []), ...created]);
+      // Liste relue juste avant : l'écran peut être en retard sur la base (chargement lent, autre onglet).
+      const current = await listPupils();
+      const created = await createPupils(nextPupilCodes(current.map(p => p.code), n));
+      setPupils([...current, ...created]);
     } catch (err) {
       setError((err as Error).message);
     }

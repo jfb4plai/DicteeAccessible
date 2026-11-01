@@ -145,6 +145,7 @@ export default function SessionSentences() {
     try {
       await saveSentences(id, toSave());
       await publishSession(id);
+      setSavedSentences(await listSentences(id)); // la page publiée montre les phrases enregistrées
       setPublished(true);
     } catch (e) { setError((e as Error).message); }
     setBusy(false);
