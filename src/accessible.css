@@ -1,0 +1,14 @@
+/* Surcharges d'accessibilité sur plai-style.css : Arial, 16 px minimum, cibles de 48 px. */
+body { font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
+h1, h2, h3 { font-family: 'DM Serif Display', Georgia, serif; font-weight: 400; }
+.plai-label, .plai-nav-link, .plai-banner, .plai-footer, .plai-error, .plai-success, .plai-input,
+.plai-btn, .plai-btn-ghost, .plai-badge { font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
+.plai-btn, .plai-btn-ghost { min-height: 48px; padding: 10px 20px; }
+.plai-nav-link { min-height: 40px; padding: 8px 12px; }
+.plai-input { padding: 11px 12px; }
+.help { font-size: 16px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
+.plai-container-wide { max-width: 1000px; margin: 0 auto; padding: 0 1.5rem; }
+:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.dot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; flex: none; }
+.dot-green { background: #16a34a; } .dot-orange { background: #f97316; } .dot-red { background: #dc2626; } .dot-grey { background: #9ca3af; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
