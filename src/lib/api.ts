@@ -3,7 +3,7 @@ import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession } from './apiMapping';
 import type { GenerateInput, GeneratedSentence } from './sentenceGeneration.js';
 import type {
-  AttemptRow, DictaSentence, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
+  AttemptRow, DictaSentence, Voice, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
 } from './types';
 
 const PAGE = 1000;
@@ -226,11 +226,11 @@ export async function generateSentences(input: GenerateInput): Promise<{ sentenc
 }
 
 export async function getSessionForEdit(sessionId: string): Promise<{
-  title: string; level: string; mode: 'autonomy' | 'class'; published: boolean; accessCode: string;
+  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; published: boolean; accessCode: string;
   items: DictaItem[]; pupils: Pupil[];
 }> {
   const [session, items, links] = await Promise.all([
-    supabase.from('dicta_sessions').select('title, level, mode, published, access_code').eq('id', sessionId).single(),
+    supabase.from('dicta_sessions').select('title, level, mode, voice, published, access_code').eq('id', sessionId).single(),
     supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
     supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
   ]);
@@ -239,6 +239,7 @@ export async function getSessionForEdit(sessionId: string): Promise<{
     title: session.data.title,
     level: session.data.level,
     mode: session.data.mode,
+    voice: session.data.voice,
     published: session.data.published,
     accessCode: session.data.access_code,
     items: items.data as DictaItem[],

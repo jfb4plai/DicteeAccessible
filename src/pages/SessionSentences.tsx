@@ -6,6 +6,7 @@ import PupilLinks from '../components/PupilLinks';
 import { generateSentences, getSessionForEdit, listSentences, listSessions, publishSession, saveSentences } from '../lib/api';
 import { capitalizedWords, containsWord, filterParasites, maxWords, normalizeToken, sentenceTooLong } from '../lib/sentences';
 import { parseWordList } from '../lib/words';
+import { warmSession } from '../lib/warmSession';
 import type { GenerateInput, SentenceFlag } from '../lib/sentenceGeneration';
 import type { SessionListItem } from '../lib/types';
 
@@ -146,6 +147,7 @@ export default function SessionSentences() {
       await saveSentences(id, toSave());
       await publishSession(id);
       setSavedSentences(await listSentences(id)); // la page publiée montre les phrases enregistrées
+      void warmSession(id); // audio prêt avant l'arrivée de la classe
       setPublished(true);
     } catch (e) { setError((e as Error).message); }
     setBusy(false);

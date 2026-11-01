@@ -10,5 +10,5 @@
     "lib": ["ES2022", "DOM"]
   },
   "include": ["./*.ts", "../src/lib/*.ts"],
-  "exclude": ["../src/lib/__tests__", "../src/lib/api.ts", "../src/lib/supabase.ts"]
+  "exclude": ["../src/lib/__tests__", "../src/lib/api.ts", "../src/lib/supabase.ts", "../src/lib/warmSession.ts"]
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import handler from '../../../api/speak';
-import { textHash } from '../audioHash';
+import { audioHash, textHash } from '../audioHash';
 
 const ID = '00000000-0000-0000-0000-0000000000d1';
 
@@ -16,18 +16,21 @@ function makeRes() {
 }
 const reqOf = (query: Record<string, string>, method = 'GET') => ({ method, query });
 
-async function goodQuery(text: string, over: Record<string, string> = {}) {
-  return { session: 'GH7FCV', kind: 'word', id: ID, h: await textHash(text), ...over };
+async function goodQuery(text: string, over: Record<string, string> = {}, voice = 'adrien') {
+  return { session: 'GH7FCV', kind: 'word', id: ID, h: await audioHash(voice, text), ...over };
 }
 
 type Call = { url: string; init?: RequestInit };
-function stubFetch(opts: { text?: string; voice?: string; rpcStatus?: number; elStatus?: number; elThrows?: boolean }) {
+function stubFetch(opts: { text?: string; voice?: string; rpcStatus?: number; takeStatus?: number; takeBody?: string; elStatus?: number; elThrows?: boolean }) {
   const calls: Call[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url: String(url), init });
-    if (String(url).includes('/rest/v1/rpc/dicta_audio_text')) {
+    if (String(url).includes('/rpc/dicta_audio_text')) {
       if (opts.rpcStatus && opts.rpcStatus !== 200) return new Response('{"message":"invalid_access"}', { status: opts.rpcStatus });
       return new Response(JSON.stringify({ text: opts.text ?? 'Il a 90 ans.', voice: opts.voice ?? 'adrien' }), { status: 200 });
+    }
+    if (String(url).includes('/rpc/dicta_audio_take')) {
+      return new Response(opts.takeBody ?? '1', { status: opts.takeStatus ?? 200 });
     }
     if (opts.elThrows) throw new Error('réseau coupé, détail secret');
     return new Response(new Uint8Array([1, 2, 3]), { status: opts.elStatus ?? 200, headers: { 'content-type': 'audio/mpeg' } });
@@ -54,9 +57,14 @@ describe('api/speak', () => {
 
   it.each([
     ['session manquante', { session: '' }],
+    ['code en minuscules', { session: 'gh7fcv' }],
+    ['code avec espaces', { session: ' GH7FCV' }],
     ['type inconnu', { kind: 'image' }],
     ['id qui n\'est pas un UUID', { id: '123' }],
+    ['id en majuscules', { id: ID.toUpperCase() }],
     ['empreinte mal formée', { h: 'xyz' }],
+    ['empreinte en majuscules', { h: 'ABCDEF0123456789' }],
+    ['paramètre inconnu (contournement du cache)', { x: '1' }],
   ])('400 : %s', async (_label, over) => {
     const calls = stubFetch({});
     const res = makeRes();
@@ -81,11 +89,36 @@ describe('api/speak', () => {
     expect(elCalls(calls)).toHaveLength(0);
   });
 
+  it('409 quand la voix de la dictée a changé depuis la création de l\'URL', async () => {
+    const calls = stubFetch({ voice: 'jef' });
+    const res = makeRes();
+    await handler(reqOf(await goodQuery('Il a 90 ans.', {}, 'adrien')) as never, res as never);
+    expect(res.code).toBe(409);
+    expect(elCalls(calls)).toHaveLength(0);
+  });
+
   it('404 quand la dictée utilise la voix de l\'appareil', async () => {
     const calls = stubFetch({ voice: 'device' });
     const res = makeRes();
-    await handler(reqOf(await goodQuery('Il a 90 ans.')) as never, res as never);
+    await handler(reqOf(await goodQuery('Il a 90 ans.', {}, 'device')) as never, res as never);
     expect(res.code).toBe(404);
+    expect(elCalls(calls)).toHaveLength(0);
+  });
+
+  it('429 sans appel à ElevenLabs quand le plafond de la dictée est atteint', async () => {
+    const calls = stubFetch({ takeStatus: 400, takeBody: '{"message":"quota_exceeded"}' });
+    const res = makeRes();
+    await handler(reqOf(await goodQuery('Il a 90 ans.')) as never, res as never);
+    expect(res.code).toBe(429);
+    expect(res.headers['Cache-Control']).toBe('no-store');
+    expect(elCalls(calls)).toHaveLength(0);
+  });
+
+  it('502 sans appel à ElevenLabs quand le compteur est indisponible', async () => {
+    const calls = stubFetch({ takeStatus: 500, takeBody: 'erreur' });
+    const res = makeRes();
+    await handler(reqOf(await goodQuery('Il a 90 ans.')) as never, res as never);
+    expect(res.code).toBe(502);
     expect(elCalls(calls)).toHaveLength(0);
   });
 
@@ -104,10 +137,18 @@ describe('api/speak', () => {
     expect(JSON.parse(String(el.init?.body))).toMatchObject({ text: 'Il a nonante ans.', model_id: 'eleven_multilingual_v2', language_code: 'fr' });
   });
 
+  it('compte l\'appel avant la synthèse, avec le code de la dictée et le plafond', async () => {
+    const calls = stubFetch({});
+    await handler(reqOf(await goodQuery('Il a 90 ans.')) as never, makeRes() as never);
+    const take = calls.find(c => c.url.includes('/rpc/dicta_audio_take'))!;
+    expect(JSON.parse(String(take.init?.body))).toEqual({ p_access_code: 'GH7FCV', p_max: 600 });
+    expect(calls.indexOf(take)).toBeLessThan(calls.findIndex(c => c.url.includes('elevenlabs.io')));
+  });
+
   it('voix jef : utilise l\'identifiant de la voix jef', async () => {
     const calls = stubFetch({ voice: 'jef' });
     const res = makeRes();
-    await handler(reqOf(await goodQuery('Il a 90 ans.')) as never, res as never);
+    await handler(reqOf(await goodQuery('Il a 90 ans.', {}, 'jef')) as never, res as never);
     expect(elCalls(calls)[0].url).toContain('/v1/text-to-speech/VOIX_JEF');
   });
 

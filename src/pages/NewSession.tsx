@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import PupilLinks from '../components/PupilLinks';
+import { warmSession } from '../lib/warmSession';
 import { createSession, listPupils } from '../lib/api';
 import { validateSessionInput } from '../lib/sessionForm';
 import type { Contents, Pupil, SessionOptions, Voice } from '../lib/types';
@@ -54,6 +55,7 @@ export default function NewSession() {
         navigate(`/enseignant/session/${id}/phrases`); // brouillon : les phrases sont à relire avant publication
         return;
       }
+      void warmSession(id); // audio prêt avant l'arrivée de la classe
       setCreated({ accessCode, pupils: pupils.filter(p => pupilIds.includes(p.id)) });
     } catch (err) {
       setFailure((err as Error).message);
@@ -133,7 +135,7 @@ export default function NewSession() {
               <option value="jef">Jean-François, voix clonée</option>
               <option value="device">Voix de l'appareil</option>
             </select>
-            <p className="help">Adrien lit « nonante » et « septante » comme en Belgique. La voix de l'appareil ne demande aucun service en ligne, mais lit « quatre-vingt-dix » comme en France.</p>
+            <p className="help">Adrien lit « nonante » et « septante » comme en Belgique. La voix de l'appareil ne demande aucun service en ligne : elle reçoit aussi « nonante » et « septante » en lettres, mais sa prononciation dépend de l'appareil.</p>
             {errors.voice && <p className="plai-error">{errors.voice}</p>}
           </div>
           <details>

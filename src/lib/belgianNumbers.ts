@@ -43,12 +43,20 @@ function toWords(n: number): string {
 }
 
 // Groupes à espaces (« 1 000 ») : hors portée, laissés tels quels. Entiers isolés de 1 à 6 chiffres : convertis.
-const NUMBER = /(\d{1,3}(?:[   ]\d{3})+)|(?<![\p{L}\p{N}.,])(\d{1,6})(?![\p{L}\p{N}]|[.,]\d)/gu;
+// Laissés tels quels aussi : périodes et dates (1990-2024, 16/11/2024), heures (9 h 30, 10:70).
+// Pas de lookbehind : certaines tablettes (iOS avant 16.4) refusent de charger un fichier qui en contient.
+const NUMBER = /(\d{1,3}(?:[ \u00a0\u202f]\d{3})+)|(^|[^\p{L}\p{N}.,])(\d{1,6})(?![\p{L}\p{N}]|[.,]\d|[-\u2013\u2014/:]\d|\s?h(?![\p{L}\p{N}]))/gu;
 
 export function numbersToBelgianWords(text: string): string {
-  return text.replace(NUMBER, (match, group: string | undefined, digits: string | undefined) => {
-    if (group || !digits) return match;
-    if (digits.length > 1 && digits.startsWith('0')) return match;
-    return toWords(Number(digits));
-  });
+  return text.replace(
+    NUMBER,
+    (match, group: string | undefined, prefix: string | undefined, digits: string | undefined, offset: number, whole: string) => {
+      if (group || !digits) return match;
+      if (digits.length > 1 && digits.startsWith('0')) return match;
+      const start = offset + (prefix ?? '').length;
+      const before = whole.slice(Math.max(0, start - 4), start);
+      if (/\d[-\u2013\u2014/:]$/.test(before) || /\d\s?h\s?$/.test(before)) return match;
+      return (prefix ?? '') + toWords(Number(digits));
+    },
+  );
 }

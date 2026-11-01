@@ -92,3 +92,50 @@ $$;
 
 revoke all on function dicta_audio_text(text, text, uuid) from public;
 grant execute on function dicta_audio_text(text, text, uuid) to anon, authenticated;
+
+-- ---------- Plafond de synthèses par dictée et par jour ----------
+-- /api/speak compte chaque appel payant (un raté de cache) avant de contacter ElevenLabs.
+
+create table if not exists dicta_audio_usage (
+  session_id uuid not null references dicta_sessions(id) on delete cascade,
+  day date not null,
+  calls int not null default 0,
+  primary key (session_id, day)
+);
+
+alter table dicta_audio_usage enable row level security;
+revoke all on dicta_audio_usage from anon, authenticated;
+grant select, insert, update, delete on dicta_audio_usage to service_role;
+
+create or replace function dicta_audio_take(p_access_code text, p_max int)
+returns int
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  sess_id uuid;
+  n int;
+begin
+  select id into sess_id
+  from dicta_sessions
+  where published and upper(access_code) = upper(btrim(coalesce(p_access_code, '')));
+  if sess_id is null then
+    raise exception 'invalid_access';
+  end if;
+
+  insert into dicta_audio_usage (session_id, day, calls)
+  values (sess_id, (now() at time zone 'utc')::date, 1)
+  on conflict (session_id, day) do update set calls = dicta_audio_usage.calls + 1
+    where dicta_audio_usage.calls < p_max
+  returning calls into n;
+
+  if n is null then
+    raise exception 'quota_exceeded';
+  end if;
+  return n;
+end;
+$$;
+
+revoke all on function dicta_audio_take(text, int) from public;
+grant execute on function dicta_audio_take(text, int) to anon, authenticated;
