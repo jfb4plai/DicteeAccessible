@@ -94,9 +94,27 @@ function clock(h: number, m: number): string {
   return m === 0 ? hours : `${hours} ${cardinal(m)}`;
 }
 
+// Abréviation → [singulier, pluriel]. Le nombre reste en chiffres ici : les passes suivantes le lisent à la belge.
+const UNIT_WORDS: Record<string, [string, string]> = {
+  km: ['kilomètre', 'kilomètres'], hm: ['hectomètre', 'hectomètres'], dam: ['décamètre', 'décamètres'],
+  m: ['mètre', 'mètres'], dm: ['décimètre', 'décimètres'], cm: ['centimètre', 'centimètres'], mm: ['millimètre', 'millimètres'],
+  kg: ['kilogramme', 'kilogrammes'], g: ['gramme', 'grammes'], mg: ['milligramme', 'milligrammes'], t: ['tonne', 'tonnes'],
+  l: ['litre', 'litres'], dl: ['décilitre', 'décilitres'], cl: ['centilitre', 'centilitres'], ml: ['millilitre', 'millilitres'],
+  'm²': ['mètre carré', 'mètres carrés'], 'cm²': ['centimètre carré', 'centimètres carrés'], 'km²': ['kilomètre carré', 'kilomètres carrés'],
+  'm³': ['mètre cube', 'mètres cubes'], 'cm³': ['centimètre cube', 'centimètres cubes'],
+  'km/h': ["kilomètre à l'heure", "kilomètres à l'heure"], '°C': ['degré Celsius', 'degrés Celsius'],
+  min: ['minute', 'minutes'], s: ['seconde', 'secondes'],
+};
+const FEMININE_UNITS = new Set(['min', 's']);
+const UNIT_KEYS = Object.keys(UNIT_WORDS).sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')).join('|');
+
 const NOT_ALNUM = '[^\\p{L}\\p{N}]';
 const AMOUNT = '\\d{1,3}(?:[ \\u00a0\\u202f.]\\d{3})+|\\d+';
 
+const UNIT = new RegExp(
+  `(^|[^\\p{L}\\p{N}.,])(${AMOUNT})(?:,(\\d+))?\\s?(${UNIT_KEYS})(?![\\p{L}\\p{N}²³'’/])`,
+  'gu',
+);
 const TIME_H = new RegExp(`(^|${NOT_ALNUM})(\\d{1,2})\\s?h\\s?(\\d{2})?(?![\\p{L}\\p{N}])`, 'gu');
 const TIME_COLON = new RegExp(`(^|${NOT_ALNUM})(\\d{1,2}):(\\d{2})(?![\\p{L}\\p{N}:\\d])`, 'gu');
 const DATE = new RegExp(`(^|[^\\p{L}\\p{N}/])(\\d{1,2})/(\\d{1,2})/(\\d{4})(?![\\p{L}\\p{N}/\\d])`, 'gu');
@@ -110,6 +128,15 @@ const NUMBER = new RegExp(
 
 export function numbersToBelgianWords(text: string): string {
   let out = text;
+
+  // Unités : « 5 km » → « 5 kilomètres » ; pluriel dès que la valeur est 2 ou plus.
+  out = out.replace(UNIT, (m, prefix: string, amount: string, decimals: string | undefined, unit: string) => {
+    if (amount.replace(/\D/g, '').length > MAX_DIGITS) return m;
+    const value = Number(`${intOf(amount)}.${decimals ?? '0'}`);
+    const [one, many] = UNIT_WORDS[unit];
+    if (value === 1 && decimals === undefined && FEMININE_UNITS.has(unit)) return `${prefix}une ${one}`;
+    return `${prefix}${amount}${decimals === undefined ? '' : `,${decimals}`} ${value >= 2 ? many : one}`;
+  });
 
   // Heures : « 9 h 30 », « 14h05 », « 10:30 ». Une heure ou une minute impossible laisse le texte tel quel.
   out = out.replace(TIME_H, (m, prefix: string, h: string, min: string | undefined) => {
