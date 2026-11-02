@@ -11,6 +11,7 @@ import SessionResults from './pages/SessionResults';
 import SessionSentences from './pages/SessionSentences';
 import PupilEntry from './pages/PupilEntry';
 import PupilExercise from './pages/PupilExercise';
+import SharedView from './pages/SharedView';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/enseignant/resultats/:sessionId" element={<ProtectedRoute><SessionResults /></ProtectedRoute>} />
           <Route path="/eleve" element={<PupilEntry />} />
           <Route path="/eleve/jeu" element={<PupilExercise />} />
+          <Route path="/suivi" element={<SharedView />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
