@@ -6,7 +6,7 @@ import PupilLinks from '../components/PupilLinks';
 import { warmSession } from '../lib/warmSession';
 import { createPupils, createSession, listPupils } from '../lib/api';
 import { nextPupilCodes } from '../lib/codes';
-import { groupByClass } from '../lib/pupilGroups';
+import { groupByClass, NO_CLASS } from '../lib/pupilGroups';
 import { clearDraft, loadDraft, saveDraft } from '../lib/sessionDraft';
 import { validateSessionInput } from '../lib/sessionForm';
 import type { Contents, Pupil, SessionOptions, Voice } from '../lib/types';
@@ -212,7 +212,7 @@ export default function NewSession() {
                 const ids = g.pupils.map(p => p.id);
                 return (
                   <div key={g.label} className="mb-3">
-                    <label><input type="checkbox" checked={ids.every(id => pupilIds.includes(id))} onChange={() => toggleGroup(ids)} /> <strong>Toute la classe : {g.label}</strong> <span className="help">({ids.length})</span></label>
+                    <label><input type="checkbox" checked={ids.every(id => pupilIds.includes(id))} onChange={() => toggleGroup(ids)} /> <strong>{g.label === NO_CLASS ? 'Tous les élèves sans classe' : `Toute la classe : ${g.label}`}</strong> <span className="help">({ids.length})</span></label>
                     <div className="flex flex-wrap gap-3 mt-1" style={{ marginLeft: 24 }}>
                       {g.pupils.map(p => (
                         <label key={p.id}><input type="checkbox" checked={pupilIds.includes(p.id)} onChange={() => togglePupil(p.id)} /> {p.code}</label>
