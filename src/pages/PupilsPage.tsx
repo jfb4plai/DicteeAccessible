@@ -34,7 +34,8 @@ export default function PupilsPage() {
 
   return (
     <PageShell actions={<TeacherNav />}>
-      <h1 className="text-3xl mb-4">Mes élèves</h1>
+      <h1 className="text-3xl mb-2">Mes élèves</h1>
+      <p className="help mb-4">Une dictée est donnée à des élèves identifiés par un code anonyme (E1, E2…). Crée les codes ici avant ta première dictée, ou directement dans « Nouvelle dictée » si aucun n'existe encore.</p>
 
       <form onSubmit={add} className="plai-card mb-4">
         <div className="plai-field">
