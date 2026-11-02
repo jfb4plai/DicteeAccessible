@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DictéeAccessible : mode d'emploi pour l'enseignant(e)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0f6e56; --teal-dark: #0a4f3e; --orange: #f97316; --bg: #faf9f7;
+    --text: #1a1814; --text2: #4a463f; --border: #d9d5cc; --card: #ffffff;
+    --note: #fff4e6; --warn: #fdecea; --ok: #e8f5ef;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Arial, Helvetica, sans-serif; font-size: 18px; line-height: 1.6; }
+  header.top { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+  header.top img { height: 40px; width: auto; }
+  header.top span { font-family: 'DM Sans', Arial, sans-serif; font-weight: 700; font-size: 20px; }
+  main { max-width: 820px; margin: 0 auto; padding: 24px 20px 64px; }
+  h1, h2, h3 { font-family: 'DM Sans', Arial, sans-serif; line-height: 1.25; color: var(--teal-dark); }
+  h1 { font-size: 34px; margin: 8px 0 8px; }
+  h2 { font-size: 26px; margin: 40px 0 8px; padding-top: 8px; border-top: 3px solid var(--teal); }
+  h3 { font-size: 20px; margin: 24px 0 6px; color: var(--text); }
+  p, li { max-width: 70ch; }
+  .lead { font-size: 20px; color: var(--text2); }
+  nav.toc { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 20px; margin: 20px 0; }
+  nav.toc ol { margin: 6px 0; padding-left: 22px; }
+  nav.toc a { color: var(--teal); }
+  ol.steps { counter-reset: s; list-style: none; padding: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding: 4px 0 10px 52px; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 0; top: 2px; width: 36px; height: 36px; border-radius: 50%; background: var(--teal); color: #fff; font-weight: 700; text-align: center; line-height: 36px; font-family: 'DM Sans', Arial, sans-serif; }
+  .btn { display: inline-block; background: var(--teal); color: #fff; border-radius: 6px; padding: 1px 10px; font-weight: 700; white-space: nowrap; }
+  .btn.o { background: var(--orange); color: var(--text); }
+  .btn.g { background: #fff; color: var(--teal-dark); border: 2px solid var(--teal); padding: 0 8px; }
+  .box { border-radius: 10px; padding: 12px 18px; margin: 16px 0; border: 1px solid var(--border); }
+  .box.note { background: var(--note); border-color: #f4c48a; }
+  .box.warn { background: var(--warn); border-color: #e8a49c; }
+  .box.ok { background: var(--ok); border-color: #9fd3bd; }
+  .box p:first-child { margin-top: 0; } .box p:last-child { margin-bottom: 0; }
+  .box strong.t { display: block; font-family: 'DM Sans', Arial, sans-serif; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; background: var(--card); margin: 12px 0; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--ok); }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .dot.g { background: #16a34a; } .dot.o { background: #f97316; } .dot.r { background: #dc2626; } .dot.n { background: #9ca3af; }
+  code { background: #eee9df; padding: 1px 6px; border-radius: 4px; font-size: 16px; }
+  footer { border-top: 1px solid var(--border); margin-top: 48px; padding-top: 16px; color: var(--text2); font-size: 16px; }
+  a { color: var(--teal); }
+  @media print { header.top, nav.toc { display: none; } body { font-size: 12pt; } h2 { page-break-after: avoid; } .box, tr { page-break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="plai-logo.jpg" alt="PLAI">
+  <span>DictéeAccessible</span>
+</header>
+<main>
+
+<h1>Mode d'emploi pour l'enseignant(e)</h1>
+<p class="lead">DictéeAccessible permet de donner une dictée sur tablette ou ordinateur. L'élève place des lettres ou des mots au lieu d'écrire à la main. Vous retrouvez ensuite chaque réponse, mot par mot, sans avoir dû surveiller l'élève pendant la dictée.</p>
+
+<div class="box ok">
+  <strong class="t">En trois lignes</strong>
+  <p>1. Vous créez des codes élèves (E1, E2…) et une dictée. 2. Les élèves entrent le code de la dictée et leur code personnel. 3. Vous lisez les résultats, mot par mot.</p>
+</div>
+
+<p><strong>Adresse de l'application :</strong> <a href="https://dicteeaccessible.vercel.app">dicteeaccessible.vercel.app</a>. Elle s'ouvre dans le navigateur (Chrome, Edge, Safari, Firefox). Il n'y a rien à installer.</p>
+
+<nav class="toc" aria-label="Sommaire">
+  <strong>Sommaire</strong>
+  <ol>
+    <li><a href="#avant">Ce qu'il faut avant de commencer</a></li>
+    <li><a href="#compte">Créer votre compte et vous connecter</a></li>
+    <li><a href="#codes">Créer les codes des élèves (et les classes)</a></li>
+    <li><a href="#dictee">Créer une dictée de mots</a></li>
+    <li><a href="#phrases">Ajouter des phrases (avec l'aide de l'IA)</a></li>
+    <li><a href="#acces">Donner l'accès aux élèves</a></li>
+    <li><a href="#eleve">Ce que fait l'élève</a></li>
+    <li><a href="#resultats">Lire les résultats</a></li>
+    <li><a href="#invitation">Inviter l'ergothérapeute ou un parent</a></li>
+    <li><a href="#supprimer">Supprimer un élève</a></li>
+    <li><a href="#limites">À savoir : ce que l'outil fait et ne fait pas</a></li>
+    <li><a href="#problemes">Si quelque chose ne marche pas</a></li>
+  </ol>
+</nav>
+
+<h2 id="avant">1. Ce qu'il faut avant de commencer</h2>
+<ul>
+  <li>Une adresse e-mail professionnelle (pour votre compte).</li>
+  <li>Un ordinateur pour préparer la dictée. Pour les élèves : une tablette ou un ordinateur, connectés à Internet.</li>
+  <li>Le son de l'appareil de l'élève : la dictée est lue à voix haute. Un casque est recommandé en classe.</li>
+  <li>Du papier ou un tableau pour noter, <strong>chez vous</strong>, quel code correspond à quel élève (voir l'étape 3).</li>
+</ul>
+
+<h2 id="compte">2. Créer votre compte et vous connecter</h2>
+<ol class="steps">
+  <li>Ouvrir <a href="https://dicteeaccessible.vercel.app">dicteeaccessible.vercel.app</a>. Deux grands blocs apparaissent : <strong>Espace enseignant(e)</strong> (vert) et <strong>Espace élève</strong> (orange).</li>
+  <li>Cliquer sur le bloc vert <strong>Espace enseignant(e)</strong>. La page <strong>Connexion Enseignant</strong> s'affiche.</li>
+  <li>Cliquer sur <strong>Pas encore de compte ? Créer un compte</strong>.</li>
+  <li>Remplir <strong>Email</strong>, un mot de passe d'au moins 6 caractères, et le confirmer. Cliquer sur le bouton <span class="btn">Créer mon compte</span>.</li>
+  <li>Vous arrivez sur la page <strong>Mes dictées</strong> : c'est votre tableau de bord.</li>
+</ol>
+<p>Les fois suivantes : même bloc vert, puis <span class="btn">Se connecter</span> avec votre e-mail et votre mot de passe.</p>
+<div class="box note">
+  <strong class="t">Mot de passe oublié ?</strong>
+  <p>Sur la page de connexion, cliquer sur <strong>Mot de passe oublié ?</strong>, entrer votre e-mail, puis cliquer sur <span class="btn">Envoyer le lien</span> : un message arrive pour créer un nouveau mot de passe.</p>
+</div>
+
+<h2 id="codes">3. Créer les codes des élèves (et les classes)</h2>
+<p>L'application ne connaît <strong>aucun prénom</strong>. Chaque élève est représenté par un code : E1, E2, E3… Vous seul(e) savez qui est E1.</p>
+<ol class="steps">
+  <li>Dans le menu en haut de la page, cliquer sur <strong>Mes élèves</strong>.</li>
+  <li><strong>Classe de ces élèves</strong> : écrire un nom de groupe, par exemple <code>P3</code> ou <code>P3 B</code>. Jamais un prénom. Ce champ est facultatif : sans classe, les codes sont rangés dans « Sans classe ».</li>
+  <li><strong>Nombre de codes à ajouter</strong> : par exemple <code>5</code>. Cliquer sur <span class="btn">Ajouter les codes</span>.</li>
+  <li>Les codes apparaissent rangés par classe. Vous pouvez changer la classe d'un élève dans son champ <strong>Classe</strong> (valider avec la touche Entrée).</li>
+</ol>
+<div class="box warn">
+  <strong class="t">À faire tout de suite, sur papier</strong>
+  <p>Noter dans votre cahier : <em>E1 = (le prénom), E2 = …</em>. L'application ne peut pas retrouver cette correspondance à votre place.</p>
+</div>
+<p>Si vous avez deux classes (par exemple P3 et P4), créez d'abord les codes de la première classe avec la classe « P3 », puis ceux de la seconde avec « P4 ». Les numéros continuent (E1 à E5, puis E6…) et ne se répètent jamais.</p>
+<p>Vous pouvez aussi créer des codes directement pendant la création d'une dictée, si vous n'en avez encore aucun (étape 4).</p>
+
+<h2 id="dictee">4. Créer une dictée de mots</h2>
+<ol class="steps">
+  <li>Dans <strong>Mes dictées</strong>, cliquer sur <span class="btn">Créer une dictée</span>. La page <strong>Nouvelle dictée</strong> a trois parties.</li>
+</ol>
+
+<h3>Partie 1 : les mots</h3>
+<table>
+  <tr><th>Champ</th><th>Que mettre ?</th></tr>
+  <tr><td><strong>Contenu de la dictée</strong></td><td>
+    <strong>Des mots</strong> : l'élève place les lettres de chaque mot.<br>
+    <strong>Des mots et des phrases</strong> : les mots d'abord, puis des phrases (voir l'étape 5).<br>
+    <strong>Des phrases seulement</strong> : une autodictée de phrases.</td></tr>
+  <tr><td><strong>Titre de la dictée</strong></td><td>Pour vous retrouver, par exemple « Dictée de mots du 16/11 ». L'élève ne le voit pas.</td></tr>
+  <tr><td><strong>Niveau de la classe</strong></td><td>De P1 à P6. Il classe la dictée dans vos résultats et fixe la longueur maximale des phrases proposées par l'IA (P1 : 6 mots, P6 : 16).</td></tr>
+  <tr><td><strong>Mots de la dictée</strong></td><td>Séparer les mots par une virgule, un retour à la ligne, ou un tiret entouré d'espaces. Exemple : <code>monsieur – droit – lendemain – chaque</code>. Chaque mot devient un exercice. 40 mots au maximum.</td></tr>
+</table>
+
+<h3>Partie 2 : le type</h3>
+<table>
+  <tr><th>Choix</th><th>Quand l'utiliser ?</th></tr>
+  <tr><td><strong>Préparation en autonomie</strong></td><td>L'élève s'entraîne seul(e), avec la bonne orthographe disponible.</td></tr>
+  <tr><td><strong>Dictée en classe</strong></td><td>Les résultats sont enregistrés mot par mot, sans aide à l'orthographe.</td></tr>
+</table>
+<p><strong>Voix de lecture</strong> : <em>Adrien, voix belge</em> ; <em>Jean-François, voix clonée</em> ; ou <em>Voix de l'appareil</em> (ne demande aucun service en ligne, mais la prononciation dépend de l'appareil). Les nombres sont lus à la belge (septante, nonante, quatre-vingts).</p>
+<p><strong>Options</strong> (déjà réglées selon le type choisi, à ouvrir seulement si vous voulez changer) :</p>
+<ul>
+  <li><strong>Montrer la bonne orthographe</strong> : l'élève peut voir le mot écrit. Si l'élève l'utilise, le mot est signalé dans vos résultats et revient au dernier tour.</li>
+  <li><strong>Lire le mot automatiquement</strong> : le mot est lu dès son arrivée. Le bouton <span class="btn">Écouter le mot</span> reste toujours disponible.</li>
+  <li><strong>Dernier tour</strong> : les mots ratés ou aidés reviennent à la fin, sans aide.</li>
+</ul>
+
+<h3>Partie 3 : les élèves et la publication</h3>
+<ul>
+  <li>Cocher les élèves concernés. Les élèves sont rangés par classe : la case <strong>Toute la classe : P3</strong> les coche tous d'un coup.</li>
+  <li>Si vous n'avez encore aucun code, le formulaire affiche <strong>Il faut d'abord des codes élèves</strong> : indiquez un nombre et cliquez sur <span class="btn g">Créer les codes</span>. Ce que vous avez déjà saisi est conservé.</li>
+  <li>Cliquer sur <span class="btn">Publier la dictée</span> (dictée de mots seulement). Si la dictée contient des phrases, le bouton s'appelle <span class="btn">Continuer vers les phrases</span>.</li>
+</ul>
+<div class="box note">
+  <strong class="t">Pas de panique si vous quittez la page</strong>
+  <p>Le formulaire garde ce que vous avez écrit tant que l'onglet reste ouvert. Aller sur « Mes élèves » puis revenir ne l'efface pas.</p>
+</div>
+<p>Après la publication : la page <strong>Dictée créée</strong> affiche le <strong>code de la dictée</strong> (6 caractères) et un lien avec un QR code pour chaque élève. Passez à l'étape 6.</p>
+
+<h2 id="phrases">5. Ajouter des phrases (avec l'aide de l'IA)</h2>
+<p>Cette étape ne concerne que les dictées « Des mots et des phrases » ou « Des phrases seulement ».</p>
+<div class="box note">
+  <strong class="t">L'IA propose, vous décidez</strong>
+  <p>L'IA suggère des phrases, mais <strong>rien n'est publié sans que vous ayez relu et validé chaque phrase</strong> : le bouton <span class="btn">Publier la dictée</span> reste bloqué tant qu'une phrase n'est pas validée. Relisez : le vocabulaire, la longueur, les prénoms éventuels et le sens doivent correspondre à votre classe.</p>
+</div>
+<ol class="steps">
+  <li>Sur la page <strong>Phrases de « votre dictée »</strong>, ouvrir <strong>Proposer des phrases avec l'IA</strong>.</li>
+  <li><strong>Mots pour lesquels proposer une phrase</strong> : par exemple <code>soufflé – ramasser – feuilles</code>.</li>
+  <li><strong>Règle travaillée</strong> (facultatif) : par exemple <code>é ou er</code>.</li>
+  <li><strong>Contexte de ta classe</strong> (facultatif) : par exemple <code>la classe prépare une sortie au parc de la Boverie</code>. C'est ici que vous mettez votre singularité : plus le contexte est précis, plus les phrases ressemblent à votre classe.</li>
+  <li>Cliquer sur <span class="btn">Proposer des phrases</span>. Les phrases arrivent dans des zones <strong>modifiables</strong> : corrigez-les à votre façon.</li>
+  <li>Pour chaque phrase, vérifier les <strong>Mots parasites, séparés par des virgules</strong> : ce sont des mots proches (par exemple « souffler, soufflez ») qui se mêlent aux bons mots et que l'élève doit laisser de côté.</li>
+  <li>Cocher <strong>Je valide cette phrase</strong> pour chaque phrase relue (ou cliquer sur <span class="btn g">Supprimer</span> pour l'écarter). Vous pouvez aussi cliquer sur <span class="btn g">Ajouter ma phrase</span> pour écrire la vôtre, ou <strong>Reprendre les phrases d'une autre dictée</strong>.</li>
+  <li><span class="btn g">Enregistrer le brouillon</span> pour continuer plus tard (la dictée apparaît alors avec le bouton <strong>Reprendre les phrases</strong> dans « Mes dictées »), ou <span class="btn">Publier la dictée</span> quand toutes les phrases sont validées.</li>
+</ol>
+<p>Si le message <em>Plafond du jour atteint</em> apparaît, vous avez utilisé toutes les propositions de la journée : écrivez vos phrases vous-même ou revenez demain. Si la proposition automatique n'est pas disponible, écrivez vos phrases vous-même : tout fonctionne sans l'IA.</p>
+<div class="box warn">
+  <strong class="t">Aucun prénom d'élève dans les phrases ou le contexte</strong>
+  <p>Ne mettez jamais le nom d'un élève dans ces champs. Le texte saisi est envoyé à un service d'IA pour proposer les phrases.</p>
+</div>
+
+<h2 id="acces">6. Donner l'accès aux élèves</h2>
+<p>Deux façons, au choix :</p>
+<ul>
+  <li><strong>Le lien personnel ou le QR code</strong> de chaque élève (page <strong>Dictée créée</strong>, ou plus tard le bouton <span class="btn g">Phrases et liens</span> dans « Mes dictées »). Le lien contient le code de la dictée et le code de l'élève, jamais un prénom. Imprimez ou affichez-le.</li>
+  <li><strong>Les deux codes à saisir</strong> : l'élève ouvre <strong>Espace élève</strong> (bloc orange) et remplit <strong>Code de la dictée</strong> (6 caractères, par exemple K7M2QX) et <strong>Ton code personnel</strong> (par exemple E1), puis clique sur <span class="btn">Commencer</span>.</li>
+</ul>
+<p>Si le code de la dictée est faux, le message <em>Code inconnu</em> s'affiche.</p>
+
+<h2 id="eleve">7. Ce que fait l'élève</h2>
+<h3>Pour un mot</h3>
+<ol class="steps">
+  <li><strong>Écouter le mot</strong> : bouton <span class="btn">Écouter le mot</span> (le mot peut aussi être lu tout seul).</li>
+  <li><strong>Placer les lettres dans l'ordre</strong> : toucher une lettre orange pour la placer dans la prochaine case libre. Toucher une lettre déjà placée pour la retirer.</li>
+  <li>Toucher <span class="btn">Valider le mot</span>.</li>
+  <li>Si c'est juste : <em>Bravo, le mot est juste.</em> puis <span class="btn">Mot suivant</span>. Si c'est faux : <em>Ce n'est pas encore juste. Réessayer.</em> et le bouton <span class="btn g">Réessayer maintenant</span>.</li>
+</ol>
+<h3>Pour une phrase</h3>
+<p>Une phrase n'est proposée que si l'élève a réussi les mots de la liste que cette phrase contient. Le déroulement dépend du type de dictée :</p>
+<ul>
+  <li><strong>Préparation en autonomie, premier passage :</strong> la phrase est écrite à l'écran. L'élève la lit et place les mots dans l'ordre.</li>
+  <li><strong>Préparation en autonomie, deuxième passage, et dictée en classe :</strong> la phrase est cachée (<em>Phrase cachée. Écouter la phrase si besoin.</em>). Des mots en trop (les parasites) se mêlent aux bons mots : l'élève les laisse de côté.</li>
+  <li><strong>En dictée en classe :</strong> la phrase n'est essayée qu'une seule fois. L'élève voit <em>Réponse enregistrée.</em>, sans savoir si c'était juste.</li>
+</ul>
+<p>Si l'option <strong>Dernier tour</strong> est active, les mots ratés ou aidés reviennent à la fin. Quand tout est fait : <strong>Dictée terminée</strong>.</p>
+
+<h2 id="resultats">8. Lire les résultats</h2>
+<ol class="steps">
+  <li>Dans <strong>Mes dictées</strong>, cliquer sur <span class="btn g">Voir les résultats</span> de la dictée.</li>
+  <li>La section <strong>Les élèves</strong> montre une ligne par élève : « n sur N réussis du premier coup · m à revoir ». C'est une information, pas une note.</li>
+  <li>Cliquer sur <span class="btn g">Ouvrir</span> à côté d'un élève : chaque mot est affiché avec une pastille. Cliquer sur un mot pour voir ce que l'élève a écrit au premier essai, le nombre d'essais et le nombre d'écoutes.</li>
+</ol>
+<table>
+  <tr><th>Pastille</th><th>Ce qu'elle indique (texte affiché)</th></tr>
+  <tr><td><span class="dot g"></span>verte</td><td><em>réussi du premier coup</em></td></tr>
+  <tr><td><span class="dot o"></span>orange</td><td><em>en cours</em> (jamais réussi pour l'instant), <em>repris</em> ou <em>bonne orthographe montrée</em> avec <em>maîtrisé au dernier tour</em>, ou dernier tour non fait</td></tr>
+  <tr><td><span class="dot r"></span>rouge</td><td><em>repris, non maîtrisé</em> ou <em>bonne orthographe montrée, non maîtrisé</em> (raté au dernier tour)</td></tr>
+  <tr><td><span class="dot n"></span>grise</td><td><em>non fait</em></td></tr>
+</table>
+<p>Pour une phrase en dictée en classe, la pastille rouge indique <em>non réussie</em> : un seul essai est autorisé.</p>
+<h3>Votre commentaire</h3>
+<p>Sous les résultats d'un élève, le champ <strong>Ton commentaire pour cette dictée</strong> est à vous : l'application ne donne ni note ni conclusion sur l'élève, c'est vous qui interprétez. Exemple : « confond « lendemain » avec une forme en -in ; reprendre « chaussure » cette semaine ».</p>
+<p>Par défaut, le commentaire reste privé. Cocher <strong>Visible par les personnes autorisées</strong> le rend lisible par les personnes que vous invitez (étape 9). Cliquer sur <span class="btn">Enregistrer le commentaire</span>.</p>
+
+<h2 id="invitation">9. Inviter l'ergothérapeute ou un parent</h2>
+<p>Une personne extérieure peut consulter, <strong>en lecture seule</strong>, les résultats d'<strong>un seul élève</strong>, sous son code (E1…). Elle ne peut rien modifier et n'a pas besoin de compte. Pour que tout le monde « rame dans le même sens », elle voit les mêmes pastilles que vous, plus une liste « À revoir ».</p>
+<div class="box warn">
+  <strong class="t">Avant d'inviter</strong>
+  <p>Vérifiez que les parents ont donné leur accord pour partager les résultats avec cette personne. L'application ne le vérifie pas : cela se règle en dehors de l'outil (avec la référente PLAI si besoin).</p>
+</div>
+<ol class="steps">
+  <li>Aller dans <strong>Mes élèves</strong>, puis descendre jusqu'à <strong>Inviter une personne à suivre un élève</strong>.</li>
+  <li><strong>Élève concerné</strong> : choisir le code. La personne invitée ne verra que cet élève.</li>
+  <li><strong>Nom d'usage de la personne invitée</strong> : par exemple « Ergo, Mme Dupont ». Il sert seulement à vous y retrouver. Jamais le prénom d'un élève.</li>
+  <li><strong>Fin de l'accès</strong> : par défaut le 31 août. Après cette date, le lien ne marche plus.</li>
+  <li>Cliquer sur <span class="btn">Créer le lien</span>. Un cadre vert affiche le lien <strong>une seule fois</strong>.</li>
+  <li>Cliquer sur <span class="btn">Copier le lien</span> et le coller dans votre message, ou sur <span class="btn g">Écrire un e-mail</span> : votre messagerie s'ouvre avec un message prêt (sans code ni prénom d'élève). Vous ajoutez l'adresse du destinataire et vous envoyez.</li>
+</ol>
+<div class="box note">
+  <strong class="t">À retenir</strong>
+  <p>L'application <strong>n'envoie rien</strong> : c'est vous qui transmettez le lien. Qui possède le lien voit les résultats de cet élève : demandez à la personne de ne pas le transmettre.</p>
+</div>
+<p><strong>Retirer l'accès :</strong> sous le formulaire, la liste <strong>Invitations de E1</strong> indique « active jusqu'au… », « expirée » ou « retirée », et la dernière consultation. Le bouton <span class="btn g">Retirer l'accès</span> coupe le lien immédiatement. Si le lien est perdu, créez-en un nouveau (10 invitations actives au plus par élève).</p>
+
+<h2 id="supprimer">10. Supprimer un élève</h2>
+<p>Dans <strong>Mes élèves</strong>, cliquer sur <span class="btn g">Supprimer</span> à côté du code. Une confirmation indique ce qui sera effacé : les réponses, les commentaires, les invitations de cet élève et ses liens de dictée. Les dictées elles-mêmes restent. <strong>C'est définitif</strong> : il n'y a pas de retour en arrière. Confirmer avec <span class="btn">Oui, supprimer E…</span>, ou <span class="btn g">Annuler</span>.</p>
+
+<h2 id="limites">11. À savoir : ce que l'outil fait et ne fait pas</h2>
+<ul>
+  <li><strong>L'outil enregistre, vous interprétez.</strong> « n sur N réussis du premier coup » est une information, pas une note. Il ne pose aucun diagnostic.</li>
+  <li><strong>L'IA ne décide jamais seule.</strong> Elle propose des phrases ; vous les relisez et les validez une par une.</li>
+  <li><strong>Pas de prénoms.</strong> L'application ne connaît que des codes. Un élève qui connaît le code de la dictée et le code d'un camarade pourrait ouvrir la dictée à sa place : en classe, ne laissez pas traîner les liens.</li>
+  <li><strong>Voix et prononciation.</strong> Les nombres sont convertis à la belge avant d'être lus. Quelques mots sont réécrits pour que la voix les prononce correctement (par exemple « wagon » est lu « ouagon » ; la voix reste imparfaite). Les unités courantes (km, g, cl…) sont lues en toutes lettres. La voix de l'appareil dépend de l'appareil.</li>
+  <li><strong>Tablette.</strong> L'application a été essayée sur ordinateur. <strong>Essayez-la sur la tablette de l'élève avant la première dictée réelle</strong> : toucher, son, lecture du lien ou du QR code.</li>
+  <li><strong>Connexion.</strong> Internet est nécessaire. Si la connexion coupe pendant que l'élève répond, ses réponses sont mises en attente et envoyées dès que la connexion revient.</li>
+</ul>
+
+<h2 id="problemes">12. Si quelque chose ne marche pas</h2>
+<table>
+  <tr><th>Problème</th><th>Que faire ?</th></tr>
+  <tr><td>L'élève voit <em>Code inconnu</em></td><td>Vérifier le code de la dictée (6 caractères, sans espace) et que la dictée est publiée.</td></tr>
+  <tr><td>Pas de son</td><td>Vérifier le volume, puis toucher <span class="btn">Écouter le mot</span> ou <span class="btn">Écouter la phrase</span>. Choisir la voix <em>Voix de l'appareil</em> pour la prochaine dictée si le problème persiste.</td></tr>
+  <tr><td>Le bouton <em>Publier la dictée</em> est grisé</td><td>Une phrase n'est pas encore validée, ou une phrase est vide. Valider ou supprimer chaque phrase.</td></tr>
+  <tr><td><em>Plafond du jour atteint</em></td><td>Écrire les phrases vous-même, ou revenir demain.</td></tr>
+  <tr><td>Un lien d'invitation ne marche plus</td><td>Il a été retiré ou il a expiré : créer une nouvelle invitation. L'invité voit alors « Cet accès n'est plus valable. Demandez un nouveau lien à l'enseignant(e). »</td></tr>
+  <tr><td>Mot de passe oublié</td><td>Voir l'étape 2.</td></tr>
+</table>
+
+<footer>
+  <p>Un doute, une idée, un bug ? Écrire à <a href="mailto:jeanfrancois.beguin@ens.ecl.be">jeanfrancois.beguin@ens.ecl.be</a>.</p>
+  <p>Pôle Liégeois d'Accompagnement vers une École Inclusive (PLAI). Ce mode d'emploi décrit l'application telle qu'elle est au 2 novembre 2026.</p>
+</footer>
+
+</main>
+</body>
+</html>

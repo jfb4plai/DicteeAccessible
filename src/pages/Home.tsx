@@ -17,6 +17,8 @@ export default function Home() {
           <p className="help" style={{ color: 'inherit' }}>Entrer le code de la dictée et son code personnel pour commencer.</p>
         </Link>
       </div>
+
+      <p className="help mt-6">Première visite ? <a href="/mode-emploi.html">Lire le mode d'emploi pour l'enseignant(e)</a>.</p>
     </PageShell>
   );
 }
