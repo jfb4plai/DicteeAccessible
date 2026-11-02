@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
-import { normalizeCode, toAttemptRow, toOpenedSession } from './apiMapping';
+import { normalizeCode, toAttemptRow, toOpenedSession, toPupil } from './apiMapping';
+import { normalizeClassLabel } from './pupilGroups';
 import type { GenerateInput, GeneratedSentence } from './sentenceGeneration.js';
 import type {
   AttemptRow, DictaSentence, Voice, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
@@ -76,19 +77,41 @@ const byCodeNumber = (a: Pupil, b: Pupil) =>
   Number(a.code.replace(/\D/g, '')) - Number(b.code.replace(/\D/g, ''));
 
 export async function listPupils(): Promise<Pupil[]> {
-  const { data, error } = await supabase.from('dicta_pupils').select('id, code');
+  const { data, error } = await supabase.from('dicta_pupils').select('id, code, class_label');
   if (error) fail('Liste des élèves indisponible.');
-  return (data as Pupil[]).sort(byCodeNumber);
+  return (data as any[]).map(toPupil).sort(byCodeNumber);
 }
 
-export async function createPupils(codes: string[]): Promise<Pupil[]> {
+export async function createPupils(codes: string[], classLabel = ''): Promise<Pupil[]> {
   const userId = await currentUserId();
+  const label = normalizeClassLabel(classLabel);
   const { data, error } = await supabase
     .from('dicta_pupils')
-    .insert(codes.map(code => ({ user_id: userId, code })))
-    .select('id, code');
+    .insert(codes.map(code => ({ user_id: userId, code, class_label: label })))
+    .select('id, code, class_label');
   if (error) fail('Création des codes impossible.');
-  return (data as Pupil[]).sort(byCodeNumber);
+  return (data as any[]).map(toPupil).sort(byCodeNumber);
+}
+
+export async function setPupilClass(pupilId: string, classLabel: string): Promise<void> {
+  const { error } = await supabase.from('dicta_pupils').update({ class_label: normalizeClassLabel(classLabel) }).eq('id', pupilId);
+  if (error) fail('Classe non enregistrée.');
+}
+
+// Ce que la suppression effacera, pour le dire avant de confirmer.
+export async function getPupilImpact(pupilId: string): Promise<{ attempts: number; sessions: number }> {
+  const [attempts, sessions] = await Promise.all([
+    supabase.from('dicta_attempts').select('id', { count: 'exact', head: true }).eq('pupil_id', pupilId),
+    supabase.from('dicta_session_pupils').select('session_id', { count: 'exact', head: true }).eq('pupil_id', pupilId),
+  ]);
+  if (attempts.error || sessions.error) fail('Calcul impossible.');
+  return { attempts: attempts.count ?? 0, sessions: sessions.count ?? 0 };
+}
+
+// Définitif : les réponses, commentaires et liens de dictée de l'élève sont supprimés en cascade.
+export async function deletePupil(pupilId: string): Promise<void> {
+  const { error } = await supabase.from('dicta_pupils').delete().eq('id', pupilId);
+  if (error) fail('Suppression impossible.');
 }
 
 export async function createSession(input: SessionInput): Promise<{ id: string; accessCode: string }> {

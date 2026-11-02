@@ -30,7 +30,7 @@ export type OpenedSession = {
   attempts: AttemptRow[];
 };
 
-export type Pupil = { id: string; code: string };
+export type Pupil = { id: string; code: string; classLabel?: string };
 
 export type Contents = 'words' | 'words+sentences' | 'sentences';
 

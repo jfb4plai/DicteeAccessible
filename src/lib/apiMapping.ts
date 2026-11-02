@@ -1,4 +1,4 @@
-import type { AttemptRow, OpenedSession, Stage } from './types';
+import type { AttemptRow, OpenedSession, Pupil, Stage } from './types';
 
 export function normalizeCode(code: string): string {
   return code.replace(/\s+/g, '').toUpperCase();
@@ -35,4 +35,9 @@ export function toOpenedSession(raw: any): OpenedSession {
       .map((s: any) => ({ id: s.id, position: s.position, text: s.text, parasites: s.parasites ?? [], itemId: s.item_id ?? null })),
     attempts: raw.attempts.map(toAttemptRow),
   };
+}
+
+// Ligne de dicta_pupils. `class_label` est absent tant que la migration des classes n'est pas appliquée.
+export function toPupil(r: any): Pupil {
+  return { id: r.id, code: r.code, classLabel: r.class_label ?? '' };
 }

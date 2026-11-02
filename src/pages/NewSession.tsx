@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
@@ -6,6 +6,7 @@ import PupilLinks from '../components/PupilLinks';
 import { warmSession } from '../lib/warmSession';
 import { createPupils, createSession, listPupils } from '../lib/api';
 import { nextPupilCodes } from '../lib/codes';
+import { groupByClass } from '../lib/pupilGroups';
 import { clearDraft, loadDraft, saveDraft } from '../lib/sessionDraft';
 import { validateSessionInput } from '../lib/sessionForm';
 import type { Contents, Pupil, SessionOptions, Voice } from '../lib/types';
@@ -52,7 +53,7 @@ export default function NewSession() {
     setFailure('');
     try {
       const current = await listPupils(); // relue juste avant, comme sur la page « Mes élèves »
-      const made = await createPupils(nextPupilCodes(current.map(p => p.code), n));
+      const made = await createPupils(nextPupilCodes(current.map(p => p.code), n), level); // la classe prend le niveau choisi
       setPupils([...current, ...made]);
       setPupilIds(prev => [...prev, ...made.map(p => p.id)]);
       setErrors(({ pupils: _gone, ...rest }) => rest);
@@ -65,6 +66,12 @@ export default function NewSession() {
   function chooseMode(m: 'autonomy' | 'class') {
     setMode(m);
     setOptions(DEFAULTS[m]);
+  }
+
+  const groups = useMemo(() => groupByClass(pupils ?? []), [pupils]);
+
+  function toggleGroup(ids: string[]) {
+    setPupilIds(prev => (ids.every(id => prev.includes(id)) ? prev.filter(id => !ids.includes(id)) : [...new Set([...prev, ...ids])]));
   }
 
   function togglePupil(id: string) {
@@ -192,7 +199,7 @@ export default function NewSession() {
           ) : pupils.length === 0 ? (
             <div className="plai-field">
               <p className="plai-label">Il faut d'abord des codes élèves</p>
-              <p className="help">Une dictée est donnée à des élèves identifiés par un code anonyme (E1, E2…). Aucun n'existe encore : crée-les ici, ce que tu as saisi plus haut est conservé.</p>
+              <p className="help">Une dictée est donnée à des élèves identifiés par un code anonyme (E1, E2…). Aucun n'existe encore : crée-les ici, ce que tu as saisi plus haut est conservé. Ils seront rangés dans la classe « {level} » (le niveau choisi plus haut).</p>
               <label className="plai-label" htmlFor="newCodes">Nombre de codes à créer</label>
               <input id="newCodes" className="plai-input" inputMode="numeric" value={newCodes} onChange={e => setNewCodes(e.target.value)} placeholder="Exemple : 5" />
               <p className="help">Les codes sont anonymes. Garde chez toi la correspondance avec les prénoms : l'application ne les connaît pas. Les codes créés sont cochés pour cette dictée.</p>
@@ -201,12 +208,20 @@ export default function NewSession() {
           ) : (
             <fieldset>
               <legend className="plai-label">Élèves concernés</legend>
-              <div className="flex flex-wrap gap-3">
-                {pupils.map(p => (
-                  <label key={p.id}><input type="checkbox" checked={pupilIds.includes(p.id)} onChange={() => togglePupil(p.id)} /> {p.code}</label>
-                ))}
-              </div>
-              <p className="help">Chaque élève choisi reçoit un lien personnel. Les résultats sont enregistrés par code.</p>
+              {groups.map(g => {
+                const ids = g.pupils.map(p => p.id);
+                return (
+                  <div key={g.label} className="mb-3">
+                    <label><input type="checkbox" checked={ids.every(id => pupilIds.includes(id))} onChange={() => toggleGroup(ids)} /> <strong>Toute la classe : {g.label}</strong> <span className="help">({ids.length})</span></label>
+                    <div className="flex flex-wrap gap-3 mt-1" style={{ marginLeft: 24 }}>
+                      {g.pupils.map(p => (
+                        <label key={p.id}><input type="checkbox" checked={pupilIds.includes(p.id)} onChange={() => togglePupil(p.id)} /> {p.code}</label>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              <p className="help">Chaque élève choisi reçoit un lien personnel. Les résultats sont enregistrés par code. Les classes se gèrent dans « Mes élèves ».</p>
             </fieldset>
           )}
           {errors.pupils && <p className="plai-error">{errors.pupils}</p>}
