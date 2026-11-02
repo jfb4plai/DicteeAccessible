@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
+import ShareInvites from '../components/ShareInvites';
 import { createPupils, deletePupil, getPupilImpact, listPupils, setPupilClass } from '../lib/api';
 import { nextPupilCodes } from '../lib/codes';
 import { groupByClass, MAX_CLASS_LABEL, normalizeClassLabel, NO_CLASS } from '../lib/pupilGroups';
@@ -124,6 +125,8 @@ export default function PupilsPage() {
           ))}
         </section>
       ))}
+
+      {pupils && pupils.length > 0 && <ShareInvites pupils={pupils} />}
     </PageShell>
   );
 }

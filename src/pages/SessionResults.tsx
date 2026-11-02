@@ -146,7 +146,7 @@ export default function SessionResults() {
                 <p className="help">C'est toi qui interprètes ces résultats. L'application ne donne ni note ni conclusion sur l'élève.</p>
               </div>
               <label><input type="checkbox" checked={visible} onChange={e => setVisible(e.target.checked)} /> <strong>Visible par les personnes autorisées</strong></label>
-              <p className="help">Par défaut, le commentaire reste privé. Les personnes autorisées pourront le lire quand l'accès externe sera disponible.</p>
+              <p className="help">Par défaut, le commentaire reste privé. Les personnes que tu invites depuis la page « Mes élèves » pourront le lire.</p>
               <button type="button" className="plai-btn mt-2" onClick={save}>Enregistrer le commentaire</button>
               {saved && <p className="help" role="status">{saved}</p>}
             </section>
