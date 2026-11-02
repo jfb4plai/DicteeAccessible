@@ -4,7 +4,9 @@ import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import PupilLinks from '../components/PupilLinks';
 import { warmSession } from '../lib/warmSession';
-import { createSession, listPupils } from '../lib/api';
+import { createPupils, createSession, listPupils } from '../lib/api';
+import { nextPupilCodes } from '../lib/codes';
+import { clearDraft, loadDraft, saveDraft } from '../lib/sessionDraft';
 import { validateSessionInput } from '../lib/sessionForm';
 import type { Contents, Pupil, SessionOptions, Voice } from '../lib/types';
 
@@ -15,22 +17,50 @@ const DEFAULTS: Record<'autonomy' | 'class', SessionOptions> = {
 
 export default function NewSession() {
   const navigate = useNavigate();
-  const [contents, setContents] = useState<Contents>('words');
-  const [voice, setVoice] = useState<Voice>('adrien');
-  const [pupils, setPupils] = useState<Pupil[]>([]);
-  const [title, setTitle] = useState('');
-  const [level, setLevel] = useState('P3');
-  const [wordsText, setWordsText] = useState('');
-  const [mode, setMode] = useState<'autonomy' | 'class'>('class');
-  const [options, setOptions] = useState<SessionOptions>(DEFAULTS.class);
-  const [pupilIds, setPupilIds] = useState<string[]>([]);
+  const [draft] = useState(loadDraft); // brouillon de l'onglet : quitter la page ne le perd pas
+  const [contents, setContents] = useState<Contents>(draft?.contents ?? 'words');
+  const [voice, setVoice] = useState<Voice>(draft?.voice ?? 'adrien');
+  const [pupils, setPupils] = useState<Pupil[] | null>(null);
+  const [title, setTitle] = useState(draft?.title ?? '');
+  const [level, setLevel] = useState(draft?.level ?? 'P3');
+  const [wordsText, setWordsText] = useState(draft?.wordsText ?? '');
+  const [mode, setMode] = useState<'autonomy' | 'class'>(draft?.mode ?? 'class');
+  const [options, setOptions] = useState<SessionOptions>(draft?.options ?? DEFAULTS.class);
+  const [pupilIds, setPupilIds] = useState<string[]>(draft?.pupilIds ?? []);
+  const [newCodes, setNewCodes] = useState('5');
+  const [codesBusy, setCodesBusy] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [failure, setFailure] = useState('');
   const [busy, setBusy] = useState(false);
   const [created, setCreated] = useState<{ accessCode: string; pupils: Pupil[] } | null>(null);
 
-  useEffect(() => { listPupils().then(setPupils).catch(() => setFailure('Liste des élèves indisponible.')); }, []);
+  useEffect(() => {
+    listPupils()
+      .then(list => { setPupils(list); setPupilIds(prev => prev.filter(id => list.some(p => p.id === id))); })
+      .catch(() => { setPupils([]); setFailure('Liste des élèves indisponible.'); });
+  }, []);
+
+  useEffect(() => {
+    saveDraft({ contents, voice, title, level, wordsText, mode, options, pupilIds });
+  }, [contents, voice, title, level, wordsText, mode, options, pupilIds]);
+
+  async function addCodes() {
+    const n = Math.floor(Number(newCodes));
+    if (!Number.isFinite(n) || n < 1 || n > 60) { setErrors({ ...errors, pupils: 'Choisir un nombre de codes entre 1 et 60.' }); return; }
+    setCodesBusy(true);
+    setFailure('');
+    try {
+      const current = await listPupils(); // relue juste avant, comme sur la page « Mes élèves »
+      const made = await createPupils(nextPupilCodes(current.map(p => p.code), n));
+      setPupils([...current, ...made]);
+      setPupilIds(prev => [...prev, ...made.map(p => p.id)]);
+      setErrors(({ pupils: _gone, ...rest }) => rest);
+    } catch (err) {
+      setFailure((err as Error).message);
+    }
+    setCodesBusy(false);
+  }
 
   function chooseMode(m: 'autonomy' | 'class') {
     setMode(m);
@@ -52,11 +82,13 @@ export default function NewSession() {
     try {
       const { id, accessCode } = await createSession(result.value);
       if (result.value.contents !== 'words') {
+        clearDraft();
         navigate(`/enseignant/session/${id}/phrases`); // brouillon : les phrases sont à relire avant publication
         return;
       }
+      clearDraft();
       void warmSession(id); // audio prêt avant l'arrivée de la classe
-      setCreated({ accessCode, pupils: pupils.filter(p => pupilIds.includes(p.id)) });
+      setCreated({ accessCode, pupils: (pupils ?? []).filter(p => pupilIds.includes(p.id)) });
     } catch (err) {
       setFailure((err as Error).message);
     }
@@ -155,8 +187,17 @@ export default function NewSession() {
 
         <section className="plai-card">
           <h2 className="text-xl mb-3">3. Les élèves et la publication</h2>
-          {pupils.length === 0 ? (
-            <p className="help">Aucun code élève. <Link to="/enseignant/eleves">Créer des codes élèves</Link> d'abord.</p>
+          {pupils === null ? (
+            <p className="help">Chargement des élèves…</p>
+          ) : pupils.length === 0 ? (
+            <div className="plai-field">
+              <p className="plai-label">Il faut d'abord des codes élèves</p>
+              <p className="help">Une dictée est donnée à des élèves identifiés par un code anonyme (E1, E2…). Aucun n'existe encore : crée-les ici, ce que tu as saisi plus haut est conservé.</p>
+              <label className="plai-label" htmlFor="newCodes">Nombre de codes à créer</label>
+              <input id="newCodes" className="plai-input" inputMode="numeric" value={newCodes} onChange={e => setNewCodes(e.target.value)} placeholder="Exemple : 5" />
+              <p className="help">Les codes sont anonymes. Garde chez toi la correspondance avec les prénoms : l'application ne les connaît pas. Les codes créés sont cochés pour cette dictée.</p>
+              <button type="button" className="plai-btn-ghost" disabled={codesBusy} onClick={addCodes}>Créer les codes</button>
+            </div>
           ) : (
             <fieldset>
               <legend className="plai-label">Élèves concernés</legend>
