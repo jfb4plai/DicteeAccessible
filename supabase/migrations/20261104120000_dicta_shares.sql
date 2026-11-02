@@ -171,11 +171,15 @@ begin
             'item_id', a.item_id, 'sentence_id', a.sentence_id, 'stage', a.stage, 'kind', a.kind,
             'attempt_number', a.attempt_number, 'answer', a.answer, 'correct', a.correct, 'listens', a.listens
           ) order by a.created_at)
-          from dicta_attempts a where a.session_id = s.id and a.pupil_id = sh.pupil_id
+          from dicta_attempts a
+          where a.session_id = s.id and a.pupil_id = sh.pupil_id and a.user_id = sh.user_id
+            and (a.sentence_id is null
+                 or exists (select 1 from dicta_sentences x where x.id = a.sentence_id and x.validated))
         ), '[]'::jsonb),
         'comment', (
           select c.body from dicta_comments c
-          where c.session_id = s.id and c.pupil_id = sh.pupil_id and c.visible and btrim(c.body) <> ''
+          where c.session_id = s.id and c.pupil_id = sh.pupil_id and c.user_id = sh.user_id
+            and c.visible and btrim(c.body) <> ''
         )
       ) as j
     from dicta_sessions s
@@ -190,9 +194,10 @@ begin
 end;
 $$;
 
-revoke all on function dicta_share_create(uuid, text, timestamptz) from public;
-revoke all on function dicta_share_list(uuid) from public;
-revoke all on function dicta_share_revoke(uuid) from public;
+-- Sur Supabase, les droits par défaut donnent aussi EXECUTE directement à anon : le retirer explicitement.
+revoke all on function dicta_share_create(uuid, text, timestamptz) from public, anon;
+revoke all on function dicta_share_list(uuid) from public, anon;
+revoke all on function dicta_share_revoke(uuid) from public, anon;
 revoke all on function dicta_share_view(text) from public;
 grant execute on function dicta_share_create(uuid, text, timestamptz) to authenticated;
 grant execute on function dicta_share_list(uuid) to authenticated;

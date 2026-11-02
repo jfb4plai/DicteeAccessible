@@ -4,7 +4,11 @@ import { buildInviteMailto, buildShareUrl, defaultShareExpiry } from '../lib/sha
 import type { Pupil, ShareInfo } from '../lib/types';
 
 const toDateInput = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const fromDateInput = (v: string) => { const [y, m, d] = v.split('-').map(Number); return new Date(y, m - 1, d, 23, 59, 59); };
+const fromDateInput = (v: string): Date | null => {
+  const [y, m, d] = v.split('-').map(Number);
+  const date = new Date(y, m - 1, d, 23, 59, 59);
+  return v && !Number.isNaN(date.getTime()) ? date : null;
+};
 const frDate = (iso: string) => new Date(iso).toLocaleDateString('fr-BE');
 
 function state(s: ShareInfo): string {
@@ -19,11 +23,13 @@ export default function ShareInvites({ pupils }: { pupils: Pupil[] }) {
   const [label, setLabel] = useState('');
   const [expires, setExpires] = useState(() => toDateInput(defaultShareExpiry(new Date())));
   const [shares, setShares] = useState<ShareInfo[]>([]);
-  const [created, setCreated] = useState<{ url: string; label: string } | null>(null);
+  const [created, setCreated] = useState<{ url: string; label: string; pupilCode: string } | null>(null);
   const [copied, setCopied] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const linkField = useRef<HTMLInputElement>(null);
+  const currentPupil = useRef(pupilId); // élève affiché maintenant : une réponse arrivée pour un autre élève est ignorée
+  currentPupil.current = pupilId;
 
   const pupil = pupils.find(p => p.id === pupilId);
 
@@ -34,23 +40,34 @@ export default function ShareInvites({ pupils }: { pupils: Pupil[] }) {
   useEffect(() => {
     setCreated(null);
     setCopied('');
-    if (!pupilId) { setShares([]); return; }
-    listShares(pupilId).then(setShares).catch((e: Error) => setError(e.message));
+    setError('');
+    setShares([]);
+    if (!pupilId) return;
+    let cancelled = false;
+    listShares(pupilId).then(l => { if (!cancelled) setShares(l); }).catch((e: Error) => { if (!cancelled) setError(e.message); });
+    return () => { cancelled = true; };
   }, [pupilId]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     if (!label.trim()) { setError("Donne un nom d'usage à la personne invitée."); return; }
+    const end = fromDateInput(expires);
+    if (!end) { setError("Choisis la date de fin de l'accès."); return; }
+    const forPupil = pupilId;
+    const forCode = pupil?.code ?? '';
     setBusy(true);
     try {
-      const { token } = await createShare(pupilId, label, fromDateInput(expires));
-      setCreated({ url: buildShareUrl(window.location.origin, token), label: label.trim() });
-      setLabel('');
-      setCopied('');
-      setShares(await listShares(pupilId));
+      const { token } = await createShare(forPupil, label, end);
+      const list = await listShares(forPupil);
+      if (currentPupil.current === forPupil) {
+        setCreated({ url: buildShareUrl(window.location.origin, token), label: label.trim(), pupilCode: forCode });
+        setLabel('');
+        setCopied('');
+        setShares(list);
+      }
     } catch (err) {
-      setError((err as Error).message);
+      if (currentPupil.current === forPupil) setError((err as Error).message);
     }
     setBusy(false);
   }
@@ -68,11 +85,13 @@ export default function ShareInvites({ pupils }: { pupils: Pupil[] }) {
 
   async function revoke(id: string) {
     setError('');
+    const forPupil = pupilId;
     try {
       await revokeShare(id);
-      setShares(await listShares(pupilId));
+      const list = await listShares(forPupil);
+      if (currentPupil.current === forPupil) setShares(list);
     } catch (err) {
-      setError((err as Error).message);
+      if (currentPupil.current === forPupil) setError((err as Error).message);
     }
   }
 
@@ -96,7 +115,7 @@ export default function ShareInvites({ pupils }: { pupils: Pupil[] }) {
         </div>
         <div className="plai-field">
           <label className="plai-label" htmlFor="share-expires">Fin de l'accès</label>
-          <input id="share-expires" type="date" className="plai-input" value={expires} onChange={e => setExpires(e.target.value)} />
+          <input id="share-expires" type="date" className="plai-input" required min={toDateInput(new Date())} value={expires} onChange={e => setExpires(e.target.value)} />
           <p className="help">Après cette date, le lien cesse de fonctionner. Par défaut, la fin de l'année scolaire (31 août). Tu peux retirer l'accès à tout moment avant.</p>
         </div>
         <button type="submit" className="plai-btn" disabled={busy || !pupilId}>Créer le lien</button>
@@ -106,7 +125,7 @@ export default function ShareInvites({ pupils }: { pupils: Pupil[] }) {
 
       {created && (
         <div className="plai-card mt-3" role="status" style={{ borderColor: 'var(--teal)', borderWidth: 2 }}>
-          <h3 className="text-lg mb-1">Lien pour « {created.label} »</h3>
+          <h3 className="text-lg mb-1">Lien pour « {created.label} », élève {created.pupilCode}</h3>
           <input ref={linkField} readOnly className="plai-input" value={created.url} onFocus={e => e.currentTarget.select()} aria-label="Lien d'invitation" />
           <div className="flex flex-wrap gap-2 mt-2">
             <button type="button" className="plai-btn" onClick={copy}>Copier le lien</button>

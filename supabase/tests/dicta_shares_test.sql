@@ -35,6 +35,20 @@ insert into dicta_attempts (user_id, session_id, pupil_id, item_id, sentence_id,
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-0000000000d1', null, 'A', 'attempt', 1, 'chta', false, 1, null),
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c2', '00000000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-0000000000d2', null, 'A', 'attempt', 1, 'brouillon', true, 1, null);
 
+-- E3 (de A) a répondu en c1 ; un commentaire visible a été écrit par un AUTRE enseignant (B) sur cette dictée et cet élève.
+insert into dicta_pupils (id, user_id, code) values
+  ('00000000-0000-0000-0000-0000000000b4', '00000000-0000-0000-0000-0000000000a1', 'E3');
+insert into dicta_session_pupils (session_id, pupil_id) values
+  ('00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b4');
+insert into dicta_attempts (user_id, session_id, pupil_id, item_id, stage, kind, attempt_number, answer, correct) values
+  ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b4', '00000000-0000-0000-0000-0000000000d1', 'A', 'attempt', 1, 'chat', true);
+insert into dicta_comments (user_id, session_id, pupil_id, body, visible) values
+  ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b4', 'Faux commentaire', true);
+
+-- E1 a aussi répondu à une phrase non validée : cette réponse ne doit jamais sortir.
+insert into dicta_attempts (user_id, session_id, pupil_id, item_id, sentence_id, stage, kind, attempt_number, answer, correct) values
+  ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b1', null, '00000000-0000-0000-0000-0000000000e2', 'B2', 'attempt', 1, 'reponse secrete', false);
+
 -- Commentaire visible pour E1, privé pour E2.
 insert into dicta_comments (user_id, session_id, pupil_id, body, visible) values
   ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-0000000000b1', 'Note visible', true),
@@ -73,6 +87,13 @@ begin
   if res2->'sessions'->0->'comment' <> 'null'::jsonb then raise exception 'commentaire privé exposé'; end if;
   if res2::text like '%Note visible%' or res2::text like '%le chat dort%' then raise exception 'données d''E1 exposées à E2'; end if;
   if jsonb_array_length(res2->'sessions'->0->'attempts') <> 1 then raise exception 'une réponse d''E2 attendue'; end if;
+
+  -- 3 bis. un commentaire écrit par un autre enseignant n'est jamais montré ; la réponse à une phrase non validée non plus
+  c := dicta_share_create('00000000-0000-0000-0000-0000000000b4', 'Parent E3', now() + interval '30 days');
+  res2 := dicta_share_view(c->>'token');
+  if res2::text like '%Faux commentaire%' then raise exception 'commentaire d''un autre enseignant exposé'; end if;
+  if res::text like '%reponse secrete%' then raise exception 'réponse à une phrase non validée exposée'; end if;
+  if jsonb_array_length(res->'sessions'->0->'attempts') <> 2 then raise exception 'deux réponses d''E1 attendues après ajout de la phrase non validée'; end if;
 
   -- 5. libellé et date invalides
   begin perform dicta_share_create('00000000-0000-0000-0000-0000000000b1', '', now() + interval '1 day'); raise exception 'attendu invalid_label';
