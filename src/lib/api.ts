@@ -2,9 +2,11 @@ import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession, toPupil } from './apiMapping';
 import { normalizeClassLabel } from './pupilGroups';
+import { TOKEN_PATTERN } from './shareLink';
+import { INVALID_SHARE_MESSAGE, shareErrorMessage, toSharedView, type SharedView } from './sharedView';
 import type { GenerateInput, GeneratedSentence } from './sentenceGeneration.js';
 import type {
-  AttemptRow, DictaSentence, Voice, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, Stage,
+  AttemptRow, DictaSentence, Voice, CommentRow, DictaItem, OpenedSession, Pupil, SessionInput, SessionListItem, SessionOptions, ShareInfo, Stage,
 } from './types';
 
 const PAGE = 1000;
@@ -313,4 +315,44 @@ export async function saveSentences(
 export async function publishSession(sessionId: string): Promise<void> {
   const { error } = await supabase.from('dicta_sessions').update({ published: true }).eq('id', sessionId);
   if (error) fail(error.message.includes('sentences_not_validated') ? 'Valide toutes les phrases avant de publier.' : 'Publication impossible.');
+}
+
+// ---------- Invitations en lecture seule (aucun accès direct à la table : fonctions SQL seulement) ----------
+
+const SHARE_CREATE_ERRORS: Record<string, string> = {
+  too_many: "10 invitations actives au plus pour cet élève. Retire-en une d'abord.",
+  invalid_label: "Donne un nom d'usage à la personne invitée (60 caractères au plus).",
+  invalid_expiry: 'La date de fin doit être dans le futur, dans les deux ans.',
+};
+
+export async function createShare(pupilId: string, label: string, expiresAt: Date): Promise<{ id: string; token: string }> {
+  const { data, error } = await supabase.rpc('dicta_share_create', {
+    p_pupil_id: pupilId, p_label: label, p_expires_at: expiresAt.toISOString(),
+  });
+  if (error) {
+    const known = Object.keys(SHARE_CREATE_ERRORS).find(code => error.message.includes(code));
+    fail(known ? SHARE_CREATE_ERRORS[known] : 'Création du lien impossible.');
+  }
+  return { id: data.id, token: data.token };
+}
+
+export async function listShares(pupilId: string): Promise<ShareInfo[]> {
+  const { data, error } = await supabase.rpc('dicta_share_list', { p_pupil_id: pupilId });
+  if (error) fail('Liste des invitations indisponible.');
+  return (data as any[]).map(r => ({
+    id: r.id, label: r.label, expiresAt: r.expires_at, revokedAt: r.revoked_at, lastUsedAt: r.last_used_at, createdAt: r.created_at,
+  }));
+}
+
+export async function revokeShare(shareId: string): Promise<void> {
+  const { error } = await supabase.rpc('dicta_share_revoke', { p_share_id: shareId });
+  if (error) fail('Retrait impossible.');
+}
+
+// Page publique : un jeton qui n'a pas la bonne forme n'est même pas envoyé.
+export async function viewShare(token: string): Promise<SharedView> {
+  if (!TOKEN_PATTERN.test(token)) fail(INVALID_SHARE_MESSAGE);
+  const { data, error } = await supabase.rpc('dicta_share_view', { p_token: token });
+  if (error) fail(shareErrorMessage(error.message));
+  return toSharedView(data);
 }

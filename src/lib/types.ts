@@ -63,3 +63,7 @@ export type SaveJob =
   | { kind: 'help'; itemId: string; stage: Stage };
 
 export type CommentRow = { pupilId: string; body: string; visible: boolean };
+
+export type ShareInfo = {
+  id: string; label: string; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; createdAt: string;
+};
