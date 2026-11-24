@@ -14,6 +14,7 @@ describe('toOpenedSession', () => {
       sessionId: 's1',
       mode: 'class',
       voice: 'adrien',
+      parasiteCount: 2,
       options: { showCorrect: false, readAloud: true, finalRound: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
       sentences: [],
@@ -41,5 +42,12 @@ describe('normalizeCode', () => {
   it('retire les espaces et met en majuscules', () => {
     expect(normalizeCode('  k7m2qx ')).toBe('K7M2QX');
     expect(normalizeCode('e 1')).toBe('E1');
+  });
+
+  it('lit parasite_count (0 à 3) et retombe sur 2 si la colonne est absente', () => {
+    const base = { session_id: 's', mode: 'class', options: { show_correct: false, read_aloud: true, final_round: true }, items: [], attempts: [] };
+    expect(toOpenedSession({ ...base, parasite_count: 0 }).parasiteCount).toBe(0);
+    expect(toOpenedSession({ ...base, parasite_count: 3 }).parasiteCount).toBe(3);
+    expect(toOpenedSession(base).parasiteCount).toBe(2);
   });
 });

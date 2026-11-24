@@ -40,6 +40,20 @@ describe('prompts', () => {
   it('sans règle, aucune mention de règle', () => {
     expect(buildSystemPrompt({ level: 'P3' })).not.toContain('é ou er');
   });
+  it('demande toujours 3 parasites, pour que le réglage puisse monter après coup', () => {
+    expect(buildSystemPrompt({ level: 'P3' })).toContain('propose 3 mots « parasites »');
+  });
+  it('ajoute la consigne de proximité demandée, et aucune sinon', () => {
+    expect(buildSystemPrompt({ level: 'P3' })).not.toContain('presque');
+    expect(buildSystemPrompt({ level: 'P3', proximity: 'phonetic' })).toContain('se prononcent presque');
+    expect(buildSystemPrompt({ level: 'P3', proximity: 'spelling' })).toContain('orthographe est presque la même');
+    expect(buildSystemPrompt({ level: 'P3', proximity: 'both' })).toContain('par le son ET par les lettres');
+  });
+  it('valide la proximité en entrée', () => {
+    expect(validateGenerateInput({ words: ['chat'], level: 'P3', proximity: 'both' })).toMatchObject({ ok: true, value: { proximity: 'both' } });
+    expect(validateGenerateInput({ words: ['chat'], level: 'P3', proximity: 'x' }).ok).toBe(false);
+    expect(validateGenerateInput({ words: ['chat'], level: 'P3', proximity: '' })).toMatchObject({ ok: true });
+  });
   it('le contexte de classe est repris', () => {
     expect(buildSystemPrompt({ level: 'P3', context: 'sortie au parc de la Boverie' })).toContain('parc de la Boverie');
   });

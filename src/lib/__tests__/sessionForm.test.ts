@@ -42,4 +42,15 @@ describe('validateSessionInput', () => {
     if (r.ok) throw new Error('attendu un refus');
     expect(r.errors.level).toBeDefined();
   });
+
+  it('parasiteCount : 2 par défaut, 0 à 3 accepté, le reste refusé', () => {
+    const d = validateSessionInput(valid);
+    if (d.ok) expect(d.value.parasiteCount).toBe(2);
+    const z = validateSessionInput({ ...valid, parasiteCount: 0 });
+    if (z.ok) expect(z.value.parasiteCount).toBe(0); else throw new Error('0 refusé');
+    for (const bad of [4, -1, 1.5]) {
+      const r = validateSessionInput({ ...valid, parasiteCount: bad });
+      expect(r.ok).toBe(false);
+    }
+  });
 });

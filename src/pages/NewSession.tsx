@@ -21,6 +21,7 @@ export default function NewSession() {
   const [draft] = useState(loadDraft); // brouillon de l'onglet : quitter la page ne le perd pas
   const [contents, setContents] = useState<Contents>(draft?.contents ?? 'words');
   const [voice, setVoice] = useState<Voice>(draft?.voice ?? 'adrien');
+  const [parasiteCount, setParasiteCount] = useState<number>(draft?.parasiteCount ?? 2);
   const [pupils, setPupils] = useState<Pupil[] | null>(null);
   const [title, setTitle] = useState(draft?.title ?? '');
   const [level, setLevel] = useState(draft?.level ?? 'P3');
@@ -43,8 +44,8 @@ export default function NewSession() {
   }, []);
 
   useEffect(() => {
-    saveDraft({ contents, voice, title, level, wordsText, mode, options, pupilIds });
-  }, [contents, voice, title, level, wordsText, mode, options, pupilIds]);
+    saveDraft({ contents, voice, title, level, wordsText, mode, options, pupilIds, parasiteCount });
+  }, [contents, voice, title, level, wordsText, mode, options, pupilIds, parasiteCount]);
 
   async function addCodes() {
     const n = Math.floor(Number(newCodes));
@@ -81,7 +82,7 @@ export default function NewSession() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setFailure('');
-    const result = validateSessionInput({ title, level, mode, wordsText, contents, voice, pupilIds, options });
+    const result = validateSessionInput({ title, level, mode, wordsText, contents, voice, parasiteCount, pupilIds, options });
     if (!result.ok) { setErrors(result.errors); return; }
     setErrors({});
     setDuplicates(result.duplicates);
@@ -177,6 +178,19 @@ export default function NewSession() {
             <p className="help">Adrien lit « nonante » et « septante » comme en Belgique. La voix de l'appareil ne demande aucun service en ligne : elle reçoit aussi « nonante » et « septante » en lettres, mais sa prononciation dépend de l'appareil.</p>
             {errors.voice && <p className="plai-error">{errors.voice}</p>}
           </div>
+          {contents !== 'words' && (
+            <div className="plai-field">
+              <label className="plai-label" htmlFor="parasites">Mots parasites par phrase</label>
+              <select id="parasites" className="plai-input" value={parasiteCount} onChange={e => setParasiteCount(Number(e.target.value))}>
+                <option value={0}>0 : remettre les mots dans l'ordre, sans mot en trop</option>
+                <option value={1}>1 mot en trop</option>
+                <option value={2}>2 mots en trop</option>
+                <option value={3}>3 mots en trop</option>
+              </select>
+              <p className="help">Nombre de mots en trop mêlés aux tuiles quand l'élève reconstruit la phrase de mémoire (étape B2, et dictée en classe). La phrase visible (B1) n'en a jamais. Tu pourras le changer plus tard sans refaire les phrases : les premiers parasites de chaque phrase sont utilisés.</p>
+              {errors.parasiteCount && <p className="plai-error">{errors.parasiteCount}</p>}
+            </div>
+          )}
           <details>
             <summary style={{ cursor: 'pointer', minHeight: 40 }}><strong>Options</strong> (réglées pour le type choisi)</summary>
             <div className="mt-2">

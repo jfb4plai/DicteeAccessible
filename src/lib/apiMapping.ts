@@ -1,3 +1,4 @@
+import { clampParasiteCount } from './sentences';
 import type { AttemptRow, OpenedSession, Pupil, Stage } from './types';
 
 export function normalizeCode(code: string): string {
@@ -24,6 +25,7 @@ export function toOpenedSession(raw: any): OpenedSession {
     sessionId: raw.session_id,
     mode: raw.mode,
     voice: raw.voice === 'jef' || raw.voice === 'device' ? raw.voice : 'adrien',
+    parasiteCount: clampParasiteCount(raw.parasite_count ?? 2),
     options: {
       showCorrect: raw.options.show_correct,
       readAloud: raw.options.read_aloud,

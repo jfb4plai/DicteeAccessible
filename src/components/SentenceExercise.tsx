@@ -8,6 +8,7 @@ export type SentenceAttemptResult = { answer: string; correct: boolean; listens:
 type Props = {
   sentence: DictaSentence;
   stage: 'B1' | 'B2';
+  parasiteCount: number;
   mode: 'autonomy' | 'class';
   readAloud: boolean;
   progressLabel: string;
@@ -25,7 +26,7 @@ const tileStyle = { minWidth: 64, height: 56, padding: '0 12px', fontSize: 22, f
 // B1 : phrase visible. B2 : phrase cachée, mots parasites mêlés aux tuiles (non marqués).
 // En classe : un seul essai, aucune indication de la place des erreurs.
 export default function SentenceExercise(p: Props) {
-  const [state, dispatch] = useReducer(tileReducer, p.sentence, s => createTileExercise(sentenceForStage(s, p.stage)));
+  const [state, dispatch] = useReducer(tileReducer, p.sentence, s => createTileExercise(sentenceForStage(s, p.stage, p.parasiteCount)));
   const listens = useRef(0);
   const reported = useRef(0);
   const single = p.mode === 'class';

@@ -3,11 +3,11 @@ import { Link, useParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import PupilLinks from '../components/PupilLinks';
-import { generateSentences, getSessionForEdit, listSentences, listSessions, publishSession, saveSentences } from '../lib/api';
+import { generateSentences, getSessionForEdit, listSentences, listSessions, publishSession, saveSentences, setParasiteCount } from '../lib/api';
 import { capitalizedWords, containsWord, filterParasites, maxWords, normalizeToken, sentenceTooLong } from '../lib/sentences';
 import { parseWordList } from '../lib/words';
 import { warmSession } from '../lib/warmSession';
-import type { GenerateInput, SentenceFlag } from '../lib/sentenceGeneration';
+import type { GenerateInput, Proximity, SentenceFlag } from '../lib/sentenceGeneration';
 import type { SessionListItem } from '../lib/types';
 
 type Row = {
@@ -45,6 +45,7 @@ export default function SessionSentences() {
   const [wordsText, setWordsText] = useState('');
   const [rule, setRule] = useState('');
   const [context, setContext] = useState('');
+  const [proximity, setProximity] = useState<Proximity | ''>('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -85,6 +86,7 @@ export default function SessionSentences() {
       const result = await generateSentences({
         words, level: session.level as GenerateInput['level'],
         ...(rule.trim() && { rule: rule.trim() }), ...(context.trim() && { context: context.trim() }),
+        ...(proximity && { proximity }),
       });
       const added: Row[] = result.sentences.map(s => ({
         key: newKey(), word: s.word, text: s.text, parasitesText: s.parasites.join(', '),
@@ -113,6 +115,14 @@ export default function SessionSentences() {
       setInfo(`${added.length} phrases reprises. Écris d'autres mots parasites, relis chaque phrase puis valide-la.`);
     } catch (e) { setError((e as Error).message); }
     setBusy(false);
+  }
+
+  async function changeParasiteCount(n: number) {
+    if (!session) return;
+    const previous = session.parasiteCount;
+    setSession({ ...session, parasiteCount: n });
+    try { await setParasiteCount(id, n); setError(''); }
+    catch (e) { setSession(s => (s ? { ...s, parasiteCount: previous } : s)); setError((e as Error).message); }
   }
 
   function addOwn() {
@@ -208,11 +218,31 @@ export default function SessionSentences() {
             <p className="plai-error">À vérifier : « {capitalizedWords(context).join(', ')} ». Un nom de lieu est possible, jamais un prénom d'élève.</p>
           )}
         </div>
+        <div className="plai-field">
+          <label className="plai-label" htmlFor="gen-proximity">Parasites proches (facultatif)</label>
+          <select id="gen-proximity" className="plai-input" value={proximity} onChange={e => setProximity(e.target.value as Proximity | '')}>
+            <option value="">Sans consigne particulière</option>
+            <option value="phonetic">Proches par le son (pain, pin)</option>
+            <option value="spelling">Proches par les lettres (chat, chas)</option>
+            <option value="both">Proches par le son et par les lettres</option>
+          </select>
+          <p className="help">Demande à l'IA des parasites qui ressemblent aux mots de la phrase. Le programme ne peut pas vérifier cette ressemblance : relis chaque parasite. Il vérifie seulement qu'il n'est pas déjà dans la phrase.</p>
+        </div>
         <button type="button" className="plai-btn" disabled={busy} onClick={propose}>Proposer des phrases</button>
       </section>
 
       <section className="plai-card">
         <h2 className="text-xl mb-3">Les phrases de la dictée</h2>
+        <div className="plai-field">
+          <label className="plai-label" htmlFor="parasite-count">Mots parasites par phrase</label>
+          <select id="parasite-count" className="plai-input" value={session.parasiteCount} onChange={e => void changeParasiteCount(Number(e.target.value))}>
+            <option value={0}>0 : sans mot en trop</option>
+            <option value={1}>1</option>
+            <option value={2}>2</option>
+            <option value={3}>3</option>
+          </select>
+          <p className="help">Nombre de parasites mêlés aux tuiles en B2 et en classe. S'applique tout de suite, sans republier : les premiers de la liste de chaque phrase sont utilisés. La phrase visible (B1) n'en a jamais.</p>
+        </div>
         {rows.length === 0 && <p className="plai-empty">Aucune phrase pour l'instant. Propose-en avec l'IA ou écris la tienne.</p>}
         {rows.map((r, n) => {
           const blocked = blockers(r, level);
@@ -230,7 +260,7 @@ export default function SessionSentences() {
                 <label className="plai-label" htmlFor={`par-${r.key}`}>Mots parasites, séparés par des virgules</label>
                 <input id={`par-${r.key}`} className="plai-input" value={r.parasitesText}
                   onChange={e => update(r.key, { parasitesText: e.target.value, validated: false })} placeholder="souffler, soufflez" />
-                <p className="help">Ajoutés aux mots de la phrase en B2 pour obliger à choisir. Un parasite égal à un mot de la phrase est retiré.</p>
+                <p className="help">Ajoutés aux mots de la phrase en B2 pour obliger à choisir ; les {session.parasiteCount} premiers sont utilisés (3 au plus enregistrés). Un parasite égal à un mot de la phrase est retiré.</p>
                 {r.removed.length > 0 && <p className="help">Retiré(s) automatiquement : {r.removed.join(', ')}.</p>}
               </div>
               {blocked.map(b => <p key={b} className="plai-error">{b}</p>)}

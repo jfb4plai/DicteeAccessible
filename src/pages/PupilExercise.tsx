@@ -160,6 +160,7 @@ export default function PupilExercise() {
           sentence={current.sentence}
           stage={stage}
           mode={opened.mode}
+          parasiteCount={opened.parasiteCount}
           readAloud={opened.options.readAloud}
           progressLabel={`Phrase ${Math.min(done + 1, sentences.length)} sur ${sentences.length}`}
           speak={() => playerRef.current!.playSentence(current.sentence!)}

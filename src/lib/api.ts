@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession, toPupil } from './apiMapping';
+import { clampParasiteCount } from './sentences';
 import { normalizeClassLabel } from './pupilGroups';
 import { TOKEN_PATTERN } from './shareLink';
 import { INVALID_SHARE_MESSAGE, shareErrorMessage, toSharedView, type SharedView } from './sharedView';
@@ -133,6 +134,7 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
         read_aloud: input.options.readAloud,
         final_round: input.options.finalRound,
         voice: input.voice,
+        parasite_count: input.parasiteCount,
         published: input.contents === 'words', // avec des phrases : brouillon jusqu'à la validation
       })
       .select('id, access_code')
@@ -251,11 +253,11 @@ export async function generateSentences(input: GenerateInput): Promise<{ sentenc
 }
 
 export async function getSessionForEdit(sessionId: string): Promise<{
-  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; published: boolean; accessCode: string;
+  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; published: boolean; accessCode: string;
   items: DictaItem[]; pupils: Pupil[];
 }> {
   const [session, items, links] = await Promise.all([
-    supabase.from('dicta_sessions').select('title, level, mode, voice, published, access_code').eq('id', sessionId).single(),
+    supabase.from('dicta_sessions').select('title, level, mode, voice, parasite_count, published, access_code').eq('id', sessionId).single(),
     supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
     supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
   ]);
@@ -265,11 +267,17 @@ export async function getSessionForEdit(sessionId: string): Promise<{
     level: session.data.level,
     mode: session.data.mode,
     voice: session.data.voice,
+    parasiteCount: clampParasiteCount(session.data.parasite_count ?? 2),
     published: session.data.published,
     accessCode: session.data.access_code,
     items: items.data as DictaItem[],
     pupils: (links.data as any[]).map(l => l.dicta_pupils as Pupil).sort(byCodeNumber),
   };
+}
+
+export async function setParasiteCount(sessionId: string, count: number): Promise<void> {
+  const { error } = await supabase.from('dicta_sessions').update({ parasite_count: clampParasiteCount(count) }).eq('id', sessionId);
+  if (error) fail('Réglage des parasites impossible.');
 }
 
 export async function listSentences(sessionId: string): Promise<(DictaSentence & { validated: boolean })[]> {

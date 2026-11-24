@@ -4,7 +4,7 @@ import type { Contents, SessionOptions, Voice } from './types';
 // des codes élèves) ne doit pas effacer ce qui a été saisi. Aucun prénom n'est concerné : titre, mots, choix.
 export type SessionDraft = {
   contents: Contents; voice: Voice; title: string; level: string; wordsText: string;
-  mode: 'autonomy' | 'class'; options: SessionOptions; pupilIds: string[];
+  mode: 'autonomy' | 'class'; options: SessionOptions; pupilIds: string[]; parasiteCount?: number;
 };
 
 type DraftStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;

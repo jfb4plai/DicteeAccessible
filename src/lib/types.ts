@@ -24,6 +24,7 @@ export type OpenedSession = {
   sessionId: string;
   mode: 'autonomy' | 'class';
   voice: Voice;
+  parasiteCount: number;
   options: SessionOptions;
   items: DictaItem[];
   sentences: DictaSentence[];
@@ -41,6 +42,7 @@ export type SessionInput = {
   words: string[];
   contents: Contents;
   voice: Voice;
+  parasiteCount: number;
   pupilIds: string[];
   options: SessionOptions;
 };

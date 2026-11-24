@@ -35,15 +35,15 @@ describe('containsWord', () => {
 });
 
 describe('filterParasites', () => {
-  it('retire les parasites égaux à un mot de la phrase, les doublons et garde 4 au plus', () => {
+  it('retire les parasites égaux à un mot de la phrase, les doublons et garde 3 au plus', () => {
     const r = filterParasites('Le vent a soufflé fort.', ['souffler', 'soufflez', 'soufflé', 'Fort', 'souffler']);
     expect(r.kept).toEqual(['souffler', 'soufflez']);
     expect(r.removed).toEqual(['soufflé', 'Fort', 'souffler']);
   });
-  it('limite à 4 parasites', () => {
+  it('limite à 3 parasites', () => {
     const r = filterParasites('Le chat dort.', ['a', 'b', 'c', 'd', 'e']);
-    expect(r.kept).toEqual(['a', 'b', 'c', 'd']);
-    expect(r.removed).toEqual(['e']);
+    expect(r.kept).toEqual(['a', 'b', 'c']);
+    expect(r.removed).toEqual(['d', 'e']);
   });
 });
 
@@ -105,6 +105,17 @@ describe('sentenceForStage', () => {
   });
   it('B2 : les parasites sont mêlés aux tuiles', () => {
     expect(sentenceForStage(s, 'B2').parasites).toEqual(['dormir', 'dormez']);
+  });
+  it('B2 : ne garde que les N premiers parasites, 0 = aucun, valeur absurde = 3 au plus', () => {
+    const t = { text: 'Le chat dort.', parasites: ['a', 'b', 'c', 'd'] };
+    expect(sentenceForStage(t, 'B2', 0).parasites).toEqual([]);
+    expect(sentenceForStage(t, 'B2', 1).parasites).toEqual(['a']);
+    expect(sentenceForStage(t, 'B2', 3).parasites).toEqual(['a', 'b', 'c']);
+    expect(sentenceForStage(t, 'B2', 9).parasites).toEqual(['a', 'b', 'c']);
+    expect(sentenceForStage(t, 'B2', -1).parasites).toEqual(['a', 'b', 'c']);
+  });
+  it('B1 : aucun parasite quel que soit le réglage', () => {
+    expect(sentenceForStage({ text: 'x', parasites: ['a'] }, 'B1', 3).parasites).toEqual([]);
   });
 });
 

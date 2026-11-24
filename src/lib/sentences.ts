@@ -2,7 +2,7 @@ import { shuffleArray } from './utils.js';
 import type { AttemptRow, DictaItem, DictaSentence } from './types';
 
 const EDGE = /^[.,;:!?«»"()[\]…\s]+|[.,;:!?«»"()[\]…\s]+$/g;
-const MAX_PARASITES = 4;
+export const MAX_PARASITES = 3;
 const MAX_WORDS: Record<string, number> = { P1: 6, P2: 8, P3: 10, P4: 12, P5: 14, P6: 16 };
 
 // Comparaison : forme composée, minuscules, une seule apostrophe.
@@ -95,10 +95,16 @@ export function sentenceTooLong(text: string, level: string): boolean {
   return cleanTokens(text).length > maxWords(level);
 }
 
-// B1 : phrase visible, on ne fait que l'ordonner (aucun mot en trop). B2 : les parasites s'ajoutent aux tuiles.
+// Nombre de parasites réglé pour la dictée : entier de 0 à MAX_PARASITES, sinon MAX_PARASITES.
+export function clampParasiteCount(n: unknown): number {
+  return typeof n === 'number' && Number.isInteger(n) && n >= 0 ? Math.min(n, MAX_PARASITES) : MAX_PARASITES;
+}
+
+// B1 : phrase visible, on ne fait que l'ordonner (aucun mot en trop). B2 : les `count` premiers parasites s'ajoutent aux tuiles.
 export function sentenceForStage(
   s: { text: string; parasites: string[] },
   stage: 'B1' | 'B2',
+  count: number = MAX_PARASITES,
 ): { text: string; parasites: string[] } {
-  return { text: s.text, parasites: stage === 'B1' ? [] : s.parasites };
+  return { text: s.text, parasites: stage === 'B1' ? [] : s.parasites.slice(0, clampParasiteCount(count)) };
 }
