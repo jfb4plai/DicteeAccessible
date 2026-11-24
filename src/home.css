@@ -1,0 +1,33 @@
+/* Accueil : même construction que FlashPLAI (pastille, accroche, bénéfices, deux entrées), couleurs PLAI. */
+.home { display: flex; flex-direction: column; align-items: flex-start; }
+.home > .home-bens, .home > .home-choose { align-self: stretch; }
+.home-pill { display: inline-block; background: var(--teal-bg); color: #085041; border: 1px solid #9fe1cb; border-radius: 999px; padding: 4px 14px; font-size: 16px; font-weight: 600; }
+.home-title { font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.2; margin: 14px 0 10px; }
+.home-title b { color: #c2410c; font-weight: inherit; }
+.home-lead { font-size: 18px; color: var(--text2); max-width: 600px; }
+.home-bens { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 22px 0 6px; }
+.home-ben { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; background: var(--surface); }
+.home-ben .ic { font-size: 26px; display: block; margin-bottom: 4px; }
+.home-ben h3 { font-size: 17px; margin-bottom: 4px; }
+.home-ben p { font-size: 16px; color: var(--text2); }
+.home-choose { margin: 26px 0 4px; }
+.home-choose h2 { font-size: 22px; margin-bottom: 12px; }
+.home-entries { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.home-entry { display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--text); border: 2px solid var(--border2); border-radius: var(--radius); padding: 18px; min-height: 160px; }
+.home-entry:hover, .home-entry:focus-visible { border-color: var(--text); }
+.home-entry .ic { font-size: 32px; }
+.home-entry strong { font-size: 20px; }
+.home-entry .s { font-size: 16px; color: var(--text2); }
+.home-entry .go { margin-top: auto; font-weight: 700; font-size: 16px; }
+.home-entry.t { background: var(--teal-bg); border-color: #9fe1cb; }
+.home-entry.t .go { color: #085041; }
+.home-entry.e { background: #fff1e6; border-color: #fdba74; }
+.home-entry.e .go { color: #9a3412; }
+.home-first { font-size: 16px; margin-top: 22px; }
+@media (max-width: 640px) {
+  .home-bens, .home-entries { grid-template-columns: 1fr; }
+  .home-title { font-size: 28px; }
+  .home-choose { order: 1; margin-top: 16px; }
+  .home-bens { order: 2; }
+  .home-first { order: 3; }
+}
