@@ -73,9 +73,9 @@ export default function NewSession() {
           </div>
           <div className="plai-field">
             <label className="plai-label" htmlFor="words">Mots de la dictée</label>
+            <p className="help" style={{ fontWeight: 700, marginBottom: 6 }}>{contents === 'sentences' ? "Facultatif pour une autodictée : ces mots servent à vérifier que l'élève les connaît avant les phrases." : "Séparer les mots par un tiret entouré d'espaces, une virgule ou un retour à la ligne. Chaque mot devient un exercice, 40 mots au maximum. Tu pourras les corriger ensuite."}</p>
             <textarea id="words" rows={5} className="plai-input" value={wordsText} onChange={e => setWordsText(e.target.value)}
               placeholder="monsieur – droit – lendemain – chaque – paire – boite – quelques" />
-            <p className="help">{contents === 'sentences' ? "Facultatif pour une autodictée : ces mots servent à vérifier que l'élève les connaît avant les phrases." : "Séparer les mots par un tiret entouré d'espaces, une virgule ou un retour à la ligne. Chaque mot devient un exercice, 40 mots au maximum. Tu pourras les corriger ensuite."}</p>
             {errors.words && <p className="plai-error">{errors.words}</p>}
             {duplicates.length > 0 && <p className="help">Doublons ignorés : {duplicates.join(', ')}.</p>}
           </div>
