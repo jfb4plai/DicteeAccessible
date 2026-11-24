@@ -34,7 +34,7 @@ export default function SentenceExercise(p: Props) {
 
   useEffect(() => {
     if (!p.readAloud) return;
-    const t = setTimeout(() => { void p.speak(SPEED_DEFAULT); }, 500);
+    const t = setTimeout(() => { void p.speak(SPEED_FASTER); }, 500); // lecture automatique : vitesse naturelle, comme avant
     return () => clearTimeout(t);
   }, [p.sentence.text, p.readAloud]);
 
