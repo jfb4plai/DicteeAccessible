@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef } from 'react';
+import { SPEED_DEFAULT, SPEED_FASTER, SPEED_SLOWEST } from '../lib/speed';
 import { sentenceForStage } from '../lib/sentences';
 import { createTileExercise, tileReducer } from '../lib/tileExercise';
 import type { DictaSentence } from '../lib/types';
@@ -33,7 +34,7 @@ export default function SentenceExercise(p: Props) {
 
   useEffect(() => {
     if (!p.readAloud) return;
-    const t = setTimeout(() => { void p.speak(); }, 500);
+    const t = setTimeout(() => { void p.speak(SPEED_DEFAULT); }, 500);
     return () => clearTimeout(t);
   }, [p.sentence.text, p.readAloud]);
 
@@ -56,7 +57,7 @@ export default function SentenceExercise(p: Props) {
     }
   }, [state.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function listen(rate = 1) {
+  function listen(rate = SPEED_DEFAULT) {
     listens.current += 1;
     void p.speak(rate);
   }
@@ -78,8 +79,8 @@ export default function SentenceExercise(p: Props) {
 
       <div className="mb-4">
         <button type="button" className="plai-btn" onClick={() => listen()}>Écouter la phrase</button>
-        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.75)}>Plus lentement</button>
-        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.5)}>Très lentement</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_FASTER)}>Un peu plus vite</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_SLOWEST)}>Très lentement</button>
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 p-4 bg-white rounded-lg" aria-label="Phrase à construire">

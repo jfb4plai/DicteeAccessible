@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import LetterBoard from './LetterBoard';
 import { createExercise, exerciseReducer } from '../lib/letterExercise';
+import { SPEED_DEFAULT, SPEED_FASTER, SPEED_SLOWEST } from '../lib/speed';
 import { pickParasiteLetters, type LetterProximity } from '../lib/parasiteLetters';
 import type { Stage } from '../lib/types';
 
@@ -43,7 +44,7 @@ export default function WordExercise(p: Props) {
 
   useEffect(() => {
     if (!p.readAloud) return;
-    const t = setTimeout(() => { void p.speak(); }, 500);
+    const t = setTimeout(() => { void p.speak(SPEED_DEFAULT); }, 500);
     return () => clearTimeout(t);
   }, [p.word, p.readAloud]);
 
@@ -71,7 +72,7 @@ export default function WordExercise(p: Props) {
     }
   }, [state.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function listen(rate = 1) {
+  function listen(rate = SPEED_DEFAULT) {
     listens.current += 1;
     void p.speak(rate);
   }
@@ -91,8 +92,8 @@ export default function WordExercise(p: Props) {
 
       <div className="flex flex-wrap gap-2 mb-4">
         <button type="button" className="plai-btn" onClick={() => listen()}>Écouter le mot</button>
-        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.75)}>Plus lentement</button>
-        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.5)}>Très lentement</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_FASTER)}>Un peu plus vite</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_SLOWEST)}>Très lentement</button>
         {p.canShowCorrect && !helpShown && state.phase !== 'right' && (
           <button type="button" className="plai-btn-ghost" onClick={showCorrect}>Montrer la bonne orthographe</button>
         )}
