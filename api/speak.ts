@@ -1,4 +1,4 @@
-import { audioHash } from '../src/lib/audioHash.js';
+import { audioHash, WORD_CONTEXT_TEXT } from '../src/lib/audioHash.js';
 import { toBelgianSpeech } from '../src/lib/belgianSpeech.js';
 
 // Fonction Vercel : audio d'un mot ou d'une phrase d'une dictée publiée, par une voix belge (ElevenLabs).
@@ -63,7 +63,7 @@ export default async function handler(req: Req, res: Res) {
 
   // 3. L'empreinte porte sur la voix et le texte converti : une voix ou un texte modifié change l'URL,
   //    jamais l'audio d'une ancienne URL.
-  if (typeof voice !== 'string' || (await audioHash(voice, text)) !== hash) return res.status(409).json({ error: 'texte' });
+  if (typeof voice !== 'string' || (await audioHash(voice, text, kind)) !== hash) return res.status(409).json({ error: 'texte' });
   const voiceId = voice === 'jef' ? process.env.ELEVENLABS_VOICE_JEF : voice === 'adrien' ? process.env.ELEVENLABS_VOICE_ADRIEN : undefined;
   if (!voiceId) return res.status(500).json({ error: 'config' });
 
@@ -87,7 +87,11 @@ export default async function handler(req: Req, res: Res) {
     const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_64`, {
       method: 'POST',
       headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: toBelgianSpeech(text), model_id: 'eleven_multilingual_v2', language_code: 'fr' }),
+      body: JSON.stringify({
+        text: toBelgianSpeech(text), model_id: 'eleven_multilingual_v2', language_code: 'fr',
+        // Mot seul : texte d'amorce non lu pour orienter la voix vers le français (voir audioHash.ts).
+        ...(kind === 'word' && { previous_text: WORD_CONTEXT_TEXT }),
+      }),
     });
     if (!r.ok) return res.status(502).json({ error: 'audio' });
     const audio = Buffer.from(await r.arrayBuffer());

@@ -20,8 +20,8 @@ export function createPlayer(opts: { accessCode: string; voice: Voice }) {
     if (opts.voice === 'device') return;
     try {
       await Promise.all([
-        ...items.map(async i => hashes.set(`word:${i.id}`, await audioHash(opts.voice, i.word))),
-        ...sentences.map(async s => hashes.set(`sentence:${s.id}`, await audioHash(opts.voice, s.text))),
+        ...items.map(async i => hashes.set(`word:${i.id}`, await audioHash(opts.voice, i.word, 'word'))),
+        ...sentences.map(async s => hashes.set(`sentence:${s.id}`, await audioHash(opts.voice, s.text, 'sentence'))),
       ]);
     } catch {
       // Empreintes indisponibles (contexte non sécurisé) : play() les recalcule, ou se replie sur la voix de l'appareil.
@@ -41,7 +41,7 @@ export function createPlayer(opts: { accessCode: string; voice: Voice }) {
     if (opts.voice === 'device') return speechService.speak(toBelgianSpeech(text), DEVICE_BASE_RATE * rate);
     let audio: HTMLAudioElement | null = null;
     try {
-      const hash = hashes.get(`${kind}:${id}`) ?? await audioHash(opts.voice, text);
+      const hash = hashes.get(`${kind}:${id}`) ?? await audioHash(opts.voice, text, kind);
       if (mine !== token) return;
       const started = new Audio(buildSpeakUrl({ accessCode: opts.accessCode, kind, id, hash }));
       audio = started;

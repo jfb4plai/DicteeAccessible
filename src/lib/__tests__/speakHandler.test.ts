@@ -17,7 +17,7 @@ function makeRes() {
 const reqOf = (query: Record<string, string>, method = 'GET') => ({ method, query });
 
 async function goodQuery(text: string, over: Record<string, string> = {}, voice = 'adrien') {
-  return { session: 'GH7FCV', kind: 'word', id: ID, h: await audioHash(voice, text), ...over };
+  return { session: 'GH7FCV', kind: 'word', id: ID, h: await audioHash(voice, text, (over.kind as 'word' | 'sentence' | undefined) ?? 'word'), ...over };
 }
 
 type Call = { url: string; init?: RequestInit };
@@ -135,6 +135,24 @@ describe('api/speak', () => {
     expect(el.url).toContain('/v1/text-to-speech/VOIX_ADRIEN');
     expect((el.init?.headers as Record<string, string>)['xi-api-key']).toBe('cle-elevenlabs-secrete');
     expect(JSON.parse(String(el.init?.body))).toMatchObject({ text: 'Il a nonante ans.', model_id: 'eleven_multilingual_v2', language_code: 'fr' });
+  });
+
+  it('mot : le texte d\'amorce non lu (previous_text) est envoyé ; phrase : aucun', async () => {
+    const wordCalls = stubFetch({ text: 'fort' });
+    await handler(reqOf(await goodQuery('fort')) as never, makeRes() as never);
+    expect(JSON.parse(String(elCalls(wordCalls)[0].init?.body))).toMatchObject({ text: 'fort', previous_text: 'Écris ce mot en français : ' });
+
+    const sentenceCalls = stubFetch({ text: 'Le vent a soufflé fort.' });
+    await handler(reqOf(await goodQuery('Le vent a soufflé fort.', { kind: 'sentence' })) as never, makeRes() as never);
+    expect(JSON.parse(String(elCalls(sentenceCalls)[0].init?.body))).not.toHaveProperty('previous_text');
+  });
+
+  it('une empreinte de phrase ne passe pas pour un mot (l\'ancien audio en cache n\'est plus servi)', async () => {
+    stubFetch({ text: 'fort' });
+    const res = makeRes();
+    const old = await audioHash('adrien', 'fort', 'sentence'); // empreinte d'avant l'amorce
+    await handler(reqOf({ session: 'GH7FCV', kind: 'word', id: ID, h: old }) as never, res as never);
+    expect(res.code).toBe(409);
   });
 
   it('compte l\'appel avant la synthèse, avec le code de la dictée et le plafond', async () => {

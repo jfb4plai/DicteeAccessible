@@ -14,4 +14,9 @@ describe('audioHash : voix et texte converti', () => {
   it('est identique pour « 90 » et « nonante » (même audio)', async () => {
     expect(await audioHash('adrien', 'Il a 90 ans.')).toBe(await audioHash('adrien', 'Il a nonante ans.'));
   });
+
+  it("un mot a une autre empreinte qu'une phrase au même texte, une phrase garde l'empreinte d'avant", async () => {
+    expect(await audioHash('adrien', 'fort', 'word')).not.toBe(await audioHash('adrien', 'fort', 'sentence'));
+    expect(await audioHash('adrien', 'fort')).toBe(await textHash('adrien|fort'));
+  });
 });

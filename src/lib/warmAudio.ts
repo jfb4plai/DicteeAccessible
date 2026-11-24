@@ -18,7 +18,7 @@ export async function warmAudio(
   async function worker() {
     for (let t = queue.shift(); t; t = queue.shift()) {
       try {
-        const hash = await audioHash(opts.voice, t.text);
+        const hash = await audioHash(opts.voice, t.text, t.kind);
         const res = await fetchFn(buildSpeakUrl({ accessCode: opts.accessCode, kind: t.kind, id: t.id, hash }));
         if (res.ok) ok++;
       } catch {
