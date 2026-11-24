@@ -136,7 +136,7 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
         final_round: input.options.finalRound,
         voice: input.voice,
         parasite_count: input.parasiteCount,
-        published: input.contents === 'words', // avec des phrases : brouillon jusqu'à la validation
+        published: false, // toute dictée naît en brouillon : elle se publie depuis l'onglet « Publier »
       })
       .select('id, access_code')
       .single();
@@ -150,9 +150,11 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
     : await supabase
         .from('dicta_items')
         .insert(input.words.map((word, position) => ({ session_id: session!.id, word, position })));
-  const pupils = await supabase
-    .from('dicta_session_pupils')
-    .insert(input.pupilIds.map(pupil_id => ({ session_id: session!.id, pupil_id })));
+  const pupils = input.pupilIds.length === 0
+    ? { error: null }
+    : await supabase
+        .from('dicta_session_pupils')
+        .insert(input.pupilIds.map(pupil_id => ({ session_id: session!.id, pupil_id })));
 
   if (items.error || pupils.error) {
     await supabase.from('dicta_sessions').delete().eq('id', session.id); // cascade : rien de partiel ne reste
@@ -281,12 +283,21 @@ export type SessionSettings = {
   title: string; level: SessionInput['level']; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; options: SessionOptions;
 };
 
-export async function updateSessionSettings(sessionId: string, s: SessionSettings): Promise<void> {
-  const { error } = await supabase.from('dicta_sessions').update({
-    title: s.title, level: s.level, mode: s.mode, voice: s.voice,
-    parasite_count: clampParasiteCount(s.parasiteCount),
-    show_correct: s.options.showCorrect, read_aloud: s.options.readAloud, final_round: s.options.finalRound,
-  }).eq('id', sessionId);
+// Met à jour seulement les réglages fournis (chaque onglet n'envoie que les siens).
+export async function updateSessionSettings(sessionId: string, s: Partial<SessionSettings>): Promise<void> {
+  const patch: Record<string, unknown> = {};
+  if (s.title !== undefined) patch.title = s.title;
+  if (s.level !== undefined) patch.level = s.level;
+  if (s.mode !== undefined) patch.mode = s.mode;
+  if (s.voice !== undefined) patch.voice = s.voice;
+  if (s.parasiteCount !== undefined) patch.parasite_count = clampParasiteCount(s.parasiteCount);
+  if (s.options !== undefined) {
+    patch.show_correct = s.options.showCorrect;
+    patch.read_aloud = s.options.readAloud;
+    patch.final_round = s.options.finalRound;
+  }
+  if (Object.keys(patch).length === 0) return;
+  const { error } = await supabase.from('dicta_sessions').update(patch).eq('id', sessionId);
   if (error) fail('Réglages non enregistrés.');
 }
 

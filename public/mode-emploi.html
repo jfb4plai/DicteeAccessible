@@ -96,8 +96,8 @@
 
 <h2 id="compte">2. Créer votre compte et vous connecter</h2>
 <ol class="steps">
-  <li>Ouvrir <a href="https://dicteeaccessible.vercel.app">dicteeaccessible.vercel.app</a>. Deux grands blocs apparaissent : <strong>Espace enseignant(e)</strong> (vert) et <strong>Espace élève</strong> (orange).</li>
-  <li>Cliquer sur le bloc vert <strong>Espace enseignant(e)</strong>. La page <strong>Connexion Enseignant</strong> s'affiche.</li>
+  <li>Ouvrir <a href="https://dicteeaccessible.vercel.app">dicteeaccessible.vercel.app</a>. Sous la question « Qui es-tu ? », deux grands blocs apparaissent : <strong>Je suis enseignant·e</strong> (vert) et <strong>Je suis élève</strong> (orange).</li>
+  <li>Cliquer sur le bloc vert <strong>Je suis enseignant·e</strong>. La page <strong>Connexion Enseignant</strong> s'affiche.</li>
   <li>Cliquer sur <strong>Pas encore de compte ? Créer un compte</strong>.</li>
   <li>Remplir <strong>Email</strong>, un mot de passe d'au moins 6 caractères, et le confirmer. Cliquer sur le bouton <span class="btn">Créer mon compte</span>.</li>
   <li>Vous arrivez sur la page <strong>Mes dictées</strong> : c'est votre tableau de bord.</li>
@@ -121,14 +121,23 @@
   <p>Noter dans votre cahier : <em>E1 = (le prénom), E2 = …</em>. L'application ne peut pas retrouver cette correspondance à votre place.</p>
 </div>
 <p>Si vous avez deux classes (par exemple P3 et P4), créez d'abord les codes de la première classe avec la classe « P3 », puis ceux de la seconde avec « P4 ». Les numéros continuent (E1 à E5, puis E6…) et ne se répètent jamais.</p>
-<p>Vous pouvez aussi créer des codes directement pendant la création d'une dictée, si vous n'en avez encore aucun (étape 4).</p>
+<p>Vous pouvez aussi créer des codes depuis l'onglet « Élèves » d'une dictée, si vous n'en avez pas assez (étape 4).</p>
 
-<h2 id="dictee">4. Créer une dictée de mots</h2>
+<h2 id="dictee">4. Préparer une dictée : l'espace en onglets</h2>
+<p>Une dictée se prépare dans un seul espace, organisé en <strong>onglets</strong> qui suivent les étapes : <strong>Contenu</strong>, <strong>Réglages</strong>, <strong>Phrases</strong> (facultatif), <strong>Élèves</strong>, <strong>Publier</strong>, puis <strong>Résultats</strong>. Vous êtes guidé(e) :</p>
+<ul>
+  <li>un bandeau <strong>Prochaine étape</strong> dit ce qu'il reste à faire, avec un bouton <span class="btn g">Y aller</span> ;</li>
+  <li>une coche ✓ apparaît sur chaque onglet terminé (la coche s'allume après l'enregistrement) ;</li>
+  <li>chaque onglet commence par une phrase qui explique ce qu'on y fait, et se termine par <span class="btn">Enregistrer et continuer</span> ;</li>
+  <li>on peut changer d'onglet à tout moment : ce qui est saisi n'est pas perdu en passant d'un onglet à l'autre. Pensez à enregistrer avant de quitter la page (le navigateur vous prévient si vous fermez ou rechargez l'onglet avec une saisie non enregistrée) ;</li>
+  <li><strong>rien n'est visible des élèves avant la publication</strong> : la dictée reste en brouillon.</li>
+</ul>
+
+<h3>Le départ : trois informations</h3>
 <ol class="steps">
-  <li>Dans <strong>Mes dictées</strong>, cliquer sur <span class="btn">Créer une dictée</span>. La page <strong>Nouvelle dictée</strong> a trois parties.</li>
+  <li>Dans <strong>Mes dictées</strong>, cliquer sur <span class="btn">Créer une dictée</span>. Au tout premier démarrage, la page affiche trois étapes pour vous guider.</li>
+  <li>Remplir le court formulaire <strong>Nouvelle dictée</strong>, puis cliquer sur <span class="btn">Créer la dictée et continuer</span>.</li>
 </ol>
-
-<h3>Partie 1 : les mots</h3>
 <table>
   <tr><th>Champ</th><th>Que mettre ?</th></tr>
   <tr><td><strong>Contenu de la dictée</strong></td><td>
@@ -137,16 +146,20 @@
     <strong>Des phrases seulement</strong> : une autodictée de phrases.</td></tr>
   <tr><td><strong>Titre de la dictée</strong></td><td>Pour vous retrouver, par exemple « Dictée de mots du 16/11 ». L'élève ne le voit pas.</td></tr>
   <tr><td><strong>Niveau de la classe</strong></td><td>De P1 à P6. Il classe la dictée dans vos résultats et fixe la longueur maximale des phrases proposées par l'IA (P1 : 6 mots, P6 : 16).</td></tr>
-  <tr><td><strong>Mots de la dictée</strong></td><td>Séparer les mots par une virgule, un retour à la ligne, ou un tiret entouré d'espaces. Exemple : <code>monsieur – droit – lendemain – chaque</code>. Chaque mot devient un exercice. 40 mots au maximum.</td></tr>
+  <tr><td><strong>Mots de la dictée</strong></td><td>Séparer les mots par une virgule, un retour à la ligne, ou un tiret entouré d'espaces. Exemple : <code>monsieur – droit – lendemain – chaque</code>. Chaque mot devient un exercice. 40 mots au maximum. Vous pourrez les corriger ensuite dans l'onglet <strong>Contenu</strong>.</td></tr>
 </table>
 
-<h3>Partie 2 : le type</h3>
+<h3>Onglet Contenu</h3>
+<p>Le titre, le niveau et la liste des mots, un mot par ligne. Corriger l'orthographe d'un mot <strong>garde ses résultats</strong>. Le bouton <span class="btn g">Retirer</span> supprime le mot et ses résultats (une confirmation indique combien de réponses sont concernées).</p>
+
+<h3>Onglet Réglages</h3>
 <table>
   <tr><th>Choix</th><th>Quand l'utiliser ?</th></tr>
   <tr><td><strong>Préparation en autonomie</strong></td><td>L'élève s'entraîne seul(e), avec la bonne orthographe disponible.</td></tr>
   <tr><td><strong>Dictée en classe</strong></td><td>Les résultats sont enregistrés mot par mot, sans aide à l'orthographe.</td></tr>
 </table>
 <p><strong>Voix de lecture</strong> : <em>Adrien, voix belge</em> ; <em>Jean-François, voix clonée</em> ; ou <em>Voix de l'appareil</em> (ne demande aucun service en ligne, mais la prononciation dépend de l'appareil). Les nombres sont lus à la belge (septante, nonante, quatre-vingts).</p>
+<p><strong>Mots parasites par phrase</strong> (0 à 3, 2 par défaut) : nombre de mots en trop mêlés aux tuiles quand l'élève reconstruit une phrase de mémoire. À 0, l'élève remet seulement les mots dans l'ordre. Sans effet si la dictée n'a pas de phrases. Le réglage s'applique tout de suite, sans republier : les premiers parasites de chaque phrase sont utilisés, donc mettre les plus utiles en premier.</p>
 <p><strong>Options</strong> (déjà réglées selon le type choisi, à ouvrir seulement si vous voulez changer) :</p>
 <ul>
   <li><strong>Montrer la bonne orthographe</strong> : l'élève peut voir le mot écrit. Si l'élève l'utilise, le mot est signalé dans vos résultats et revient au dernier tour.</li>
@@ -154,35 +167,39 @@
   <li><strong>Dernier tour</strong> : les mots ratés ou aidés reviennent à la fin, sans aide.</li>
 </ul>
 
-<h3>Partie 3 : les élèves et la publication</h3>
+<h3>Onglet Élèves</h3>
 <ul>
   <li>Cocher les élèves concernés. Les élèves sont rangés par classe : la case <strong>Toute la classe : P3</strong> les coche tous d'un coup.</li>
-  <li>Si vous n'avez encore aucun code, le formulaire affiche <strong>Il faut d'abord des codes élèves</strong> : indiquez un nombre et cliquez sur <span class="btn g">Créer les codes</span>. Ce que vous avez déjà saisi est conservé.</li>
-  <li>Cliquer sur <span class="btn">Publier la dictée</span> (dictée de mots seulement). Si la dictée contient des phrases, le bouton s'appelle <span class="btn">Continuer vers les phrases</span>.</li>
+  <li>Si vous n'avez pas assez de codes, indiquez un nombre dans <strong>Créer de nouveaux codes</strong> et cliquez sur <span class="btn g">Créer les codes</span> : ils sont cochés pour cette dictée.</li>
+  <li>Il faut au moins un élève pour publier.</li>
 </ul>
-<div class="box note">
-  <strong class="t">Pas de panique si vous quittez la page</strong>
-  <p>Le formulaire garde ce que vous avez écrit tant que l'onglet reste ouvert. Aller sur « Mes élèves » puis revenir ne l'efface pas.</p>
+
+<h3>Onglet Publier</h3>
+<p>Une liste dit ce qu'il reste à faire avant de publier (avec un bouton <span class="btn g">Aller à…</span> pour chaque point). Quand tout est prêt, cliquer sur <span class="btn">Publier la dictée</span>. L'onglet affiche alors le <strong>code de la dictée</strong> (6 caractères) et un lien avec un QR code pour chaque élève. Le lien est cliquable (il s'ouvre dans un nouvel onglet pour l'essayer) et un bouton <span class="btn">Copier le lien</span> le place dans le presse-papiers. Passez à l'étape 6.</p>
+
+<h3>Modifier une dictée déjà créée</h3>
+<p>Dans <strong>Mes dictées</strong>, <span class="btn">Continuer la dictée</span> (brouillon) ou <span class="btn g">Ouvrir (liens, modifier)</span> (dictée publiée) ramène à la prochaine étape ; tous les onglets restent modifiables, même après publication.</p>
+<div class="box warn">
+  <strong class="t">À savoir avant de modifier une dictée publiée</strong>
+  <p>Une dictée générée n'a pas forcément été partagée. Si le code ou les liens sont déjà donnés, les élèves voient les modifications tout de suite. Corriger un mot garde ses résultats ; retirer un mot ou une phrase supprime ses résultats ; retirer un élève lui enlève l'accès (ses réponses déjà enregistrées restent). Un encadré en haut de l'espace indique le nombre de réponses déjà enregistrées. Changer le type de dictée change le parcours des élèves : à éviter une fois la dictée commencée.</p>
 </div>
-<p>Après la publication : la page <strong>Dictée créée</strong> affiche le <strong>code de la dictée</strong> (6 caractères) et un lien avec un QR code pour chaque élève. Le lien est cliquable (il s'ouvre dans un nouvel onglet pour l'essayer) et un bouton <span class="btn">Copier le lien</span> le place dans le presse-papiers. Passez à l'étape 6.</p>
 
 <h2 id="phrases">5. Ajouter des phrases (avec l'aide de l'IA)</h2>
-<p>Cette étape ne concerne que les dictées « Des mots et des phrases » ou « Des phrases seulement ».</p>
+<p>Cette étape ne concerne que les dictées « Des mots et des phrases » ou « Des phrases seulement ». Elle se fait dans l'onglet <strong>Phrases</strong>, facultatif : sans phrases, cliquer sur <span class="btn g">Passer cette étape</span>.</p>
 <div class="box note">
   <strong class="t">L'IA propose, vous décidez</strong>
   <p>L'IA suggère des phrases, mais <strong>rien n'est publié sans que vous ayez relu et validé chaque phrase</strong> : le bouton <span class="btn">Publier la dictée</span> reste bloqué tant qu'une phrase n'est pas validée. Relisez : le vocabulaire, la longueur, les prénoms éventuels et le sens doivent correspondre à votre classe.</p>
 </div>
 <ol class="steps">
-  <li>Sur la page <strong>Phrases de « votre dictée »</strong>, ouvrir <strong>Proposer des phrases avec l'IA</strong>.</li>
-  <li><strong>Mots pour lesquels proposer une phrase</strong> : par exemple <code>soufflé – ramasser – feuilles</code>.</li>
+  <li>Dans l'onglet <strong>Phrases</strong>, repérer le bloc <strong>Proposer des phrases avec l'IA</strong>.</li>
+  <li><strong>Mots pour lesquels proposer une phrase</strong> : par exemple <code>soufflé – ramasser – feuilles</code> (déjà remplis avec les mots de la dictée).</li>
   <li><strong>Règle travaillée</strong> (facultatif) : par exemple <code>é ou er</code>.</li>
   <li><strong>Contexte de ta classe</strong> (facultatif) : par exemple <code>la classe prépare une sortie au parc de la Boverie</code>. C'est ici que vous mettez votre singularité : plus le contexte est précis, plus les phrases ressemblent à votre classe.</li>
+  <li><strong>Parasites proches</strong> (facultatif) : par le son (pain, pin), par les lettres (chat, chas), ou les deux. Cette consigne est donnée à l'IA ; le programme ne peut pas vérifier la ressemblance, la relecture reste la vôtre.</li>
   <li>Cliquer sur <span class="btn">Proposer des phrases</span>. Les phrases arrivent dans des zones <strong>modifiables</strong> : corrigez-les à votre façon.</li>
-  <li>Pour chaque phrase, vérifier les <strong>Mots parasites, séparés par des virgules</strong> : ce sont des mots proches (par exemple « souffler, soufflez ») qui se mêlent aux bons mots et que l'élève doit laisser de côté.</li>
-  <li><strong>Modifier une dictée déjà créée :</strong> bouton « Modifier » dans la liste des dictées (ou sur l'écran de création). On peut changer le titre, le niveau, le type, la voix, les options, les mots et les élèves. Attention : une dictée générée n'a pas forcément été partagée ; si le code ou les liens sont déjà donnés, les élèves voient les modifications tout de suite. Corriger un mot garde ses résultats ; retirer un mot ou une phrase supprime ses résultats ; l'écran affiche le nombre de réponses déjà enregistrées. Les phrases se modifient depuis « Modifier les phrases ».</li>
-  <li>Régler le <strong>nombre de mots parasites par phrase</strong> (0 à 3, 2 par défaut) à la création de la dictée ou au-dessus de la liste des phrases. À 0, l'élève remet seulement les mots dans l'ordre. Le réglage s'applique tout de suite, sans republier : les premiers parasites de chaque phrase sont utilisés, donc mettre les plus utiles en premier. L'option <strong>Parasites proches</strong> (par le son, par les lettres, ou les deux) demande à l'IA des parasites qui ressemblent aux mots de la phrase ; le programme ne peut pas le vérifier, la relecture reste la vôtre.</li>
+  <li>Pour chaque phrase, vérifier les <strong>Mots parasites, séparés par des virgules</strong> : ce sont des mots proches (par exemple « souffler, soufflez ») qui se mêlent aux bons mots et que l'élève doit laisser de côté. Le nombre utilisé se règle dans l'onglet <strong>Réglages</strong>.</li>
   <li>Cocher <strong>Je valide cette phrase</strong> pour chaque phrase relue (ou cliquer sur <span class="btn g">Supprimer</span> pour l'écarter). Vous pouvez aussi cliquer sur <span class="btn g">Ajouter ma phrase</span> pour écrire la vôtre, ou <strong>Reprendre les phrases d'une autre dictée</strong>.</li>
-  <li><span class="btn g">Enregistrer le brouillon</span> pour continuer plus tard (la dictée apparaît alors avec le bouton <strong>Reprendre les phrases</strong> dans « Mes dictées »), ou <span class="btn">Publier la dictée</span> quand toutes les phrases sont validées.</li>
+  <li><span class="btn">Enregistrer et continuer</span> (ou <span class="btn g">Enregistrer sans continuer</span> pour rester sur l'onglet). Les phrases enregistrées mais non validées restent invisibles pour les élèves.</li>
 </ol>
 <p>Si le message <em>Plafond du jour atteint</em> apparaît, vous avez utilisé toutes les propositions de la journée : écrivez vos phrases vous-même ou revenez demain. Si la proposition automatique n'est pas disponible, écrivez vos phrases vous-même : tout fonctionne sans l'IA.</p>
 <div class="box warn">
@@ -193,8 +210,8 @@
 <h2 id="acces">6. Donner l'accès aux élèves</h2>
 <p>Deux façons, au choix :</p>
 <ul>
-  <li><strong>Le lien personnel ou le QR code</strong> de chaque élève (page <strong>Dictée créée</strong>, ou plus tard le bouton <span class="btn g">Phrases et liens</span> dans « Mes dictées »). Le lien contient le code de la dictée et le code de l'élève, jamais un prénom. Imprimez ou affichez-le.</li>
-  <li><strong>Les deux codes à saisir</strong> : l'élève ouvre <strong>Espace élève</strong> (bloc orange) et remplit <strong>Code de la dictée</strong> (6 caractères, par exemple K7M2QX) et <strong>Ton code personnel</strong> (par exemple E1), puis clique sur <span class="btn">Commencer</span>.</li>
+  <li><strong>Le lien personnel ou le QR code</strong> de chaque élève (onglet <strong>Publier</strong> de la dictée, ouvert depuis « Mes dictées »). Le lien contient le code de la dictée et le code de l'élève, jamais un prénom. Imprimez ou affichez-le.</li>
+  <li><strong>Les deux codes à saisir</strong> : l'élève ouvre <strong>Je suis élève</strong> sur la page d'accueil et remplit <strong>Code de la dictée</strong> (6 caractères, par exemple K7M2QX) et <strong>Ton code personnel</strong> (par exemple E1), puis clique sur <span class="btn">Commencer</span>.</li>
 </ul>
 <p>Si le code de la dictée est faux, le message <em>Code inconnu</em> s'affiche.</p>
 

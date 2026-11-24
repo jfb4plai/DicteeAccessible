@@ -1,14 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import PageShell from '../components/PageShell';
-import TeacherNav from '../components/TeacherNav';
-import PupilLinks from '../components/PupilLinks';
-import { generateSentences, getSessionForEdit, listSentences, listSessions, publishSession, saveSentences, setParasiteCount } from '../lib/api';
-import { capitalizedWords, containsWord, filterParasites, maxWords, normalizeToken, sentenceTooLong } from '../lib/sentences';
-import { parseWordList } from '../lib/words';
-import { warmSession } from '../lib/warmSession';
-import type { GenerateInput, Proximity, SentenceFlag } from '../lib/sentenceGeneration';
-import type { SessionListItem } from '../lib/types';
+import { generateSentences, listSentences, listSessions, saveSentences } from '../../lib/api';
+import { capitalizedWords, containsWord, filterParasites, maxWords, normalizeToken, sentenceTooLong } from '../../lib/sentences';
+import { parseWordList } from '../../lib/words';
+import type { GenerateInput, Proximity, SentenceFlag } from '../../lib/sentenceGeneration';
+import type { SessionListItem } from '../../lib/types';
+import { SaveBar, TabIntro, type TabProps } from './common';
 
 type Row = {
   key: string;
@@ -22,13 +18,12 @@ type Row = {
   flags: SentenceFlag[];
   removed: string[];
 };
-type Session = Awaited<ReturnType<typeof getSessionForEdit>>;
 
 let keyCounter = 0;
 const newKey = () => `r${++keyCounter}`;
 const splitParasites = (text: string) => text.split(',').map(p => p.trim()).filter(Boolean);
 
-// Ce qui empêche de valider une phrase proposée par l'IA : le mot cible a disparu (y compris après rechargement), ou elle est trop longue pour le niveau.
+// Ce qui empêche de valider une phrase proposée par l'IA : le mot cible a disparu, ou elle est trop longue pour le niveau.
 // Les phrases écrites par l'enseignant(e) ne sont jamais bloquées : c'est elle ou lui qui décide.
 function blockers(row: Row, level: string): string[] {
   const out: string[] = [];
@@ -38,54 +33,40 @@ function blockers(row: Row, level: string): string[] {
   return out;
 }
 
-export default function SessionSentences() {
-  const { id = '' } = useParams();
-  const [session, setSession] = useState<Session | null>(null);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [wordsText, setWordsText] = useState('');
+export default function SentencesTab({ id, data, reload, goNext, goTo, setDirty }: TabProps) {
+  const session = data.session;
+  const level = session.level;
+  const [rows, setRows] = useState<Row[]>(() => data.sentences.map(x => ({
+    key: newKey(), id: x.id, word: session.items.find(i => i.id === x.itemId)?.word ?? null, text: x.text,
+    parasitesText: x.parasites.join(', '), itemId: x.itemId, validated: x.validated, generated: false, flags: [], removed: [],
+  })));
+  const [wordsText, setWordsText] = useState(session.items.map(i => i.word).join('\n'));
   const [rule, setRule] = useState('');
   const [context, setContext] = useState('');
   const [proximity, setProximity] = useState<Proximity | ''>('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const [published, setPublished] = useState(false);
-  const [reopened, setReopened] = useState(false); // dictée publiée dont on rouvre les phrases
   const [others, setOthers] = useState<SessionListItem[]>([]);
   const [fromId, setFromId] = useState('');
-  const [savedSentences, setSavedSentences] = useState<{ id: string; text: string; parasites: string[] }[]>([]);
 
   useEffect(() => {
-    Promise.all([getSessionForEdit(id), listSentences(id)])
-      .then(([s, sentences]) => {
-        setSession(s);
-        setPublished(s.published);
-        setSavedSentences(sentences);
-        setWordsText(s.items.map(i => i.word).join('\n'));
-        setRows(sentences.map(x => ({
-          key: newKey(), id: x.id, word: s.items.find(i => i.id === x.itemId)?.word ?? null, text: x.text,
-          parasitesText: x.parasites.join(', '), itemId: x.itemId, validated: x.validated, generated: false, flags: [], removed: [],
-        })));
-      })
-      .catch((e: Error) => setError(e.message));
     listSessions().then(all => setOthers(all.filter(x => x.id !== id))).catch(() => setOthers([]));
   }, [id]);
 
-  const level = session?.level ?? 'P3';
-  const allValidated = rows.length > 0 && rows.every(r => r.validated && blockers(r, level).length === 0);
   const unvalidated = useMemo(() => rows.filter(r => !r.validated).length, [rows]);
 
   function update(key: string, patch: Partial<Row>) {
     setRows(prev => prev.map(r => (r.key === key ? { ...r, ...patch } : r)));
+    setDirty(true);
   }
 
   async function propose() {
-    if (!session) return;
     setBusy(true); setError(''); setInfo('');
     try {
       const { words } = parseWordList(wordsText);
       const result = await generateSentences({
-        words, level: session.level as GenerateInput['level'],
+        words, level: level as GenerateInput['level'],
         ...(rule.trim() && { rule: rule.trim() }), ...(context.trim() && { context: context.trim() }),
         ...(proximity && { proximity }),
       });
@@ -95,6 +76,7 @@ export default function SessionSentences() {
         validated: false, generated: true, flags: s.flags, removed: s.removedParasites,
       }));
       setRows(prev => [...prev, ...added]);
+      setDirty(true);
       setInfo(result.missing.length > 0 ? `Pas de phrase proposée pour : ${result.missing.join(', ')}. Écris-la toi-même.` : `${added.length} phrases proposées. Relis-les une par une.`);
     } catch (e) {
       setError((e as Error).message);
@@ -113,21 +95,15 @@ export default function SessionSentences() {
         validated: false, generated: false, flags: [], removed: [],
       }));
       setRows(prev => [...prev, ...added]);
+      setDirty(true);
       setInfo(`${added.length} phrases reprises. Écris d'autres mots parasites, relis chaque phrase puis valide-la.`);
     } catch (e) { setError((e as Error).message); }
     setBusy(false);
   }
 
-  async function changeParasiteCount(n: number) {
-    if (!session) return;
-    const previous = session.parasiteCount;
-    setSession({ ...session, parasiteCount: n });
-    try { await setParasiteCount(id, n); setError(''); }
-    catch (e) { setSession(s => (s ? { ...s, parasiteCount: previous } : s)); setError((e as Error).message); }
-  }
-
   function addOwn() {
     setRows(prev => [...prev, { key: newKey(), word: null, text: '', parasitesText: '', itemId: null, validated: false, generated: false, flags: [], removed: [] }]);
+    setDirty(true);
   }
 
   const toSave = () => rows.map(r => ({
@@ -138,7 +114,7 @@ export default function SessionSentences() {
     validated: r.validated,
   }));
 
-  async function saveDraft() {
+  async function save(thenContinue: boolean) {
     if (rows.some(r => !r.text.trim())) { setError('Complète ou supprime les phrases vides.'); return; }
     setBusy(true); setError(''); setInfo('');
     try {
@@ -146,70 +122,24 @@ export default function SessionSentences() {
       const fresh = await listSentences(id);
       // Les identifiants des nouvelles phrases sont connus après l'enregistrement : on les rattache dans l'ordre.
       setRows(prev => prev.map((r, i) => ({ ...r, id: fresh[i]?.id ?? r.id })));
-      setInfo('Brouillon enregistré.');
+      await reload();
+      setDirty(false);
+      if (thenContinue) goNext(); else setInfo('Phrases enregistrées.');
     } catch (e) { setError((e as Error).message); }
     setBusy(false);
-  }
-
-  async function publish() {
-    if (rows.some(r => !r.text.trim())) { setError('Complète ou supprime les phrases vides.'); return; }
-    setBusy(true); setError(''); setInfo('');
-    try {
-      await saveSentences(id, toSave());
-      await publishSession(id);
-      setSavedSentences(await listSentences(id)); // la page publiée montre les phrases enregistrées
-      void warmSession(id); // audio prêt avant l'arrivée de la classe
-      setPublished(true);
-      setReopened(false);
-    } catch (e) { setError((e as Error).message); }
-    setBusy(false);
-  }
-
-  if (!session) {
-    return <PageShell actions={<TeacherNav />}>{error ? <p className="plai-error">{error}</p> : <p className="help">Chargement…</p>}</PageShell>;
-  }
-
-  if (published && !reopened) {
-    return (
-      <PageShell wide actions={<TeacherNav />}>
-        <h1 className="text-3xl mb-2">Dictée publiée</h1>
-        <p className="plai-success">Code de la dictée : <strong style={{ fontSize: 24 }}>{session.accessCode}</strong></p>
-        <p className="help mb-4">Donner à chaque élève son lien ou son QR code.</p>
-        <PupilLinks accessCode={session.accessCode} pupils={session.pupils} />
-        <h2 className="text-xl mt-6 mb-2">Phrases de la dictée</h2>
-        {savedSentences.length === 0 && <p className="help">Cette dictée n'a pas de phrases.</p>}
-        {savedSentences.map(x => (
-          <div key={x.id} className="plai-card">
-            <strong>{x.text}</strong>
-            <p className="help">Parasites : {x.parasites.length > 0 ? x.parasites.join(', ') : 'aucun'}</p>
-          </div>
-        ))}
-        <p className="mt-4 flex flex-wrap gap-2">
-          <Link to={`/enseignant/session/${id}/modifier`} className="plai-btn inline-block no-underline">Modifier la dictée</Link>
-          <button type="button" className="plai-btn-ghost" onClick={() => setReopened(true)}>Modifier les phrases</button>
-          <Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link>
-        </p>
-      </PageShell>
-    );
   }
 
   return (
-    <PageShell wide actions={<TeacherNav />}>
-      <p><Link to="/enseignant">← Mes dictées</Link></p>
-      <h1 className="text-3xl my-3">Phrases de « {session.title} »</h1>
-      {published && (
-        <p className="plai-banner" role="note">
-          Cette dictée est publiée. Une dictée générée n'a pas forcément été partagée, mais si elle l'est, les élèves voient chaque phrase validée dès qu'elle est enregistrée. Une phrase supprimée emporte ses résultats.
-        </p>
-      )}
-      <p className="help mb-4">
-        {session.mode === 'class'
-          ? 'Dictée en classe : chaque phrase est dictée une seule fois, sans indication de l\'endroit des erreurs.'
-          : 'Préparation en autonomie : l\'élève voit la phrase (B1), puis la reconstitue de mémoire (B2) avec des mots parasites.'}
-      </p>
+    <div>
+      <TabIntro title="Les phrases (facultatif)">
+        Pour une dictée de phrases ou une autodictée. {session.mode === 'class'
+          ? "En classe, chaque phrase est dictée une seule fois, sans indication de l'endroit des erreurs."
+          : "En préparation en autonomie, l'élève voit la phrase (B1), puis la reconstitue de mémoire (B2) avec des mots parasites."}
+        {' '}Rien n'est visible des élèves tant que chaque phrase n'est pas validée par toi. Pas de phrases ? Passe directement à l'étape suivante.
+      </TabIntro>
 
       <section className="plai-card">
-        <h2 className="text-xl mb-3">Proposer des phrases avec l'IA</h2>
+        <h3 className="text-xl mb-3">Proposer des phrases avec l'IA</h3>
         <div className="plai-field">
           <label className="plai-label" htmlFor="gen-words">Mots pour lesquels proposer une phrase</label>
           <textarea id="gen-words" rows={4} className="plai-input" value={wordsText} onChange={e => setWordsText(e.target.value)}
@@ -239,21 +169,14 @@ export default function SessionSentences() {
           </select>
           <p className="help">Demande à l'IA des parasites qui ressemblent aux mots de la phrase. Le programme ne peut pas vérifier cette ressemblance : relis chaque parasite. Il vérifie seulement qu'il n'est pas déjà dans la phrase.</p>
         </div>
-        <button type="button" className="plai-btn" disabled={busy} onClick={propose}>Proposer des phrases</button>
+        <button type="button" className="plai-btn" disabled={busy} onClick={() => void propose()}>Proposer des phrases</button>
       </section>
 
       <section className="plai-card">
-        <h2 className="text-xl mb-3">Les phrases de la dictée</h2>
-        <div className="plai-field">
-          <label className="plai-label" htmlFor="parasite-count">Mots parasites par phrase</label>
-          <select id="parasite-count" className="plai-input" value={session.parasiteCount} onChange={e => void changeParasiteCount(Number(e.target.value))}>
-            <option value={0}>0 : sans mot en trop</option>
-            <option value={1}>1</option>
-            <option value={2}>2</option>
-            <option value={3}>3</option>
-          </select>
-          <p className="help">Nombre de parasites mêlés aux tuiles en B2 et en classe. S'applique tout de suite, sans republier : les premiers de la liste de chaque phrase sont utilisés. La phrase visible (B1) n'en a jamais.</p>
-        </div>
+        <h3 className="text-xl mb-3">Les phrases de la dictée</h3>
+        <p className="help mb-2">
+          Nombre de parasites utilisés par phrase : {session.parasiteCount}. Ce nombre se règle dans l'onglet <button type="button" className="plai-btn-ghost" style={{ minHeight: 0, padding: '0 8px' }} onClick={() => goTo('reglages')}>Réglages</button> ; les premiers de la liste de chaque phrase sont utilisés.
+        </p>
         {rows.length === 0 && <p className="plai-empty">Aucune phrase pour l'instant. Propose-en avec l'IA ou écris la tienne.</p>}
         {rows.map((r, n) => {
           const blocked = blockers(r, level);
@@ -281,7 +204,7 @@ export default function SessionSentences() {
                   onChange={e => update(r.key, { validated: e.target.checked })} /> <strong>Je valide cette phrase</strong>
               </label>
               <button type="button" className="plai-btn-ghost" style={{ marginLeft: 12 }}
-                onClick={() => setRows(prev => prev.filter(x => x.key !== r.key))}>Supprimer</button>
+                onClick={() => { setRows(prev => prev.filter(x => x.key !== r.key)); setDirty(true); }}>Supprimer</button>
             </div>
           );
         })}
@@ -296,22 +219,25 @@ export default function SessionSentences() {
                   {others.map(o => <option key={o.id} value={o.id}>{o.title} ({o.level})</option>)}
                 </select>
               </div>
-              <button type="button" className="plai-btn-ghost" disabled={busy || !fromId} onClick={reuse}>Reprendre</button>
+              <button type="button" className="plai-btn-ghost" disabled={busy || !fromId} onClick={() => void reuse()}>Reprendre</button>
             </div>
           )}
         </div>
         <p className="help mt-2">Pour une dictée en classe, reprends les phrases de la préparation et écris d'autres parasites.</p>
       </section>
 
-      {error && <p className="plai-error">{error}</p>}
-      {info && <p className="plai-success" role="status">{info}</p>}
-      <div className="flex flex-wrap gap-3 items-center mt-3">
-        <button type="button" className="plai-btn-ghost" disabled={busy} onClick={saveDraft}>{published ? 'Enregistrer' : 'Enregistrer le brouillon'}</button>
-        <button type="button" className="plai-btn" disabled={busy || !allValidated} onClick={publish}>{published ? 'Enregistrer et terminer' : 'Publier la dictée'}</button>
-      </div>
-      <p className="help mt-2">
-        {rows.length === 0 ? 'Ajoute au moins une phrase pour publier.' : unvalidated > 0 ? `Rien n'est publié tant que tu n'as pas validé chaque phrase (${unvalidated} à valider).` : 'Toutes les phrases sont validées.'}
+      <p className="help mt-3">
+        {rows.length === 0 ? 'Aucune phrase : cette étape est facultative.' : unvalidated > 0 ? `${unvalidated} phrase${unvalidated > 1 ? 's' : ''} à valider avant de publier.` : 'Toutes les phrases sont validées.'}
       </p>
-    </PageShell>
+      <SaveBar
+        busy={busy}
+        onSave={() => void save(true)}
+        error={error}
+        info={info}
+        extra={rows.length === 0
+          ? <button type="button" className="plai-btn-ghost" onClick={goNext}>Passer cette étape</button>
+          : <button type="button" className="plai-btn-ghost" disabled={busy} onClick={() => void save(false)}>Enregistrer sans continuer</button>}
+      />
+    </div>
   );
 }

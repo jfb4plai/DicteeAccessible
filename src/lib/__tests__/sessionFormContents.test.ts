@@ -31,4 +31,10 @@ describe('validateSessionInput : contenu de la dictée', () => {
     const r = validateSessionInput({ ...base, wordsText: 'chat' });
     expect(r.ok && r.value.contents).toBe('words');
   });
+
+  it('un brouillon peut être créé sans élève (requirePupils faux), pas une dictée à publier', () => {
+    const none = { ...base, pupilIds: [], wordsText: 'chat – chien', contents: 'words' };
+    expect(validateSessionInput(none).ok).toBe(false);
+    expect(validateSessionInput(none, false).ok).toBe(true);
+  });
 });

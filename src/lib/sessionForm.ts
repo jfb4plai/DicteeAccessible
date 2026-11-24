@@ -22,7 +22,8 @@ export type SessionFormResult =
   | { ok: true; value: SessionInput; duplicates: string[] }
   | { ok: false; errors: Partial<Record<'title' | 'level' | 'words' | 'pupils' | 'contents' | 'voice' | 'parasiteCount', string>> };
 
-export function validateSessionInput(raw: RawSessionForm): SessionFormResult {
+// requirePupils : faux pour la création d'un brouillon, les élèves se choisissent ensuite dans l'onglet « Élèves ».
+export function validateSessionInput(raw: RawSessionForm, requirePupils = true): SessionFormResult {
   const errors: Partial<Record<'title' | 'level' | 'words' | 'pupils' | 'contents' | 'voice' | 'parasiteCount', string>> = {};
   const title = raw.title.trim();
   const { words, duplicates } = parseWordList(raw.wordsText);
@@ -39,7 +40,7 @@ export function validateSessionInput(raw: RawSessionForm): SessionFormResult {
   if (!Number.isInteger(parasiteCount) || parasiteCount < 0 || parasiteCount > 3) errors.parasiteCount = 'Choisis un nombre de parasites entre 0 et 3.';
   if (words.length === 0 && contents !== 'sentences') errors.words = 'Ajoute au moins un mot.';
   else if (words.length > MAX_WORDS) errors.words = `Maximum ${MAX_WORDS} mots par dictée.`;
-  if (raw.pupilIds.length === 0) errors.pupils = 'Choisis au moins un élève.';
+  if (requirePupils && raw.pupilIds.length === 0) errors.pupils = 'Choisis au moins un élève.';
 
   if (Object.keys(errors).length > 0 || !level || !mode || !contents || !voice) return { ok: false, errors };
   return { ok: true, value: { title, level, mode, words, contents, voice, parasiteCount, pupilIds: raw.pupilIds, options: raw.options }, duplicates };
