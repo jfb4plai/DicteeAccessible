@@ -189,7 +189,7 @@ export default function PupilExercise() {
         canShowCorrect={opened.options.showCorrect && current.stage === 'A'}
         readAloud={opened.options.readAloud}
         progressLabel={progressLabel}
-        speak={() => playerRef.current!.playWord(item)}
+        speak={rate => playerRef.current!.playWord(item, rate)}
         onAttempt={r => handleAttempt(current, r)}
         onHelp={() => handleHelp(current)}
         onNext={handleNext}

@@ -66,7 +66,7 @@ export function createPlayer(opts: { accessCode: string; voice: Voice }) {
   return {
     prepare,
     stop,
-    playWord: (item: DictaItem) => play('word', item.id, item.word),
+    playWord: (item: DictaItem, rate = 1) => play('word', item.id, item.word, rate),
     playSentence: (s: DictaSentence, rate = 1) => play('sentence', s.id, s.text, rate),
   };
 }

@@ -14,7 +14,7 @@ type Props = {
   canShowCorrect: boolean;
   readAloud: boolean;
   progressLabel: string;
-  speak: () => Promise<void>;
+  speak: (rate?: number) => Promise<void>;
   onAttempt: (r: AttemptResult) => void;
   onHelp: () => void;
   onNext: () => void;
@@ -71,9 +71,9 @@ export default function WordExercise(p: Props) {
     }
   }, [state.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function listen() {
+  function listen(rate = 1) {
     listens.current += 1;
-    void p.speak();
+    void p.speak(rate);
   }
 
   function showCorrect() {
@@ -90,7 +90,9 @@ export default function WordExercise(p: Props) {
       </ul>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        <button type="button" className="plai-btn" onClick={listen}>Écouter le mot</button>
+        <button type="button" className="plai-btn" onClick={() => listen()}>Écouter le mot</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.75)}>Plus lentement</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.5)}>Très lentement</button>
         {p.canShowCorrect && !helpShown && state.phase !== 'right' && (
           <button type="button" className="plai-btn-ghost" onClick={showCorrect}>Montrer la bonne orthographe</button>
         )}

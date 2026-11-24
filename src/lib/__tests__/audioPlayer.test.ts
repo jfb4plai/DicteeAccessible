@@ -85,4 +85,23 @@ describe('createPlayer', () => {
     await player.playSentence({ id: 's1', position: 0, text: 'Le chat dort.', parasites: [], itemId: null }, 0.5);
     expect(speak).toHaveBeenCalledWith('Le chat dort.', 0.45);
   });
+
+  it('mot plus lent : playbackRate 0.75 et 0.5, vitesse normale par défaut', async () => {
+    const player = createPlayer({ accessCode: 'ABCDEF', voice: 'adrien' });
+    void player.playWord(item('i1', 'chat'), 0.75);
+    await tick();
+    expect(FakeAudio.instances[0].playbackRate).toBe(0.75);
+    void player.playWord(item('i1', 'chat'), 0.5);
+    await tick();
+    expect(FakeAudio.instances[1].playbackRate).toBe(0.5);
+    void player.playWord(item('i1', 'chat'));
+    await tick();
+    expect(FakeAudio.instances[2].playbackRate).toBe(1);
+  });
+
+  it('mot avec la voix de l\'appareil : la vitesse multiplie la vitesse habituelle', async () => {
+    const player = createPlayer({ accessCode: 'ABCDEF', voice: 'device' });
+    await player.playWord(item('i1', 'chat'), 0.75);
+    expect(speak).toHaveBeenCalledWith('chat', 0.675);
+  });
 });
