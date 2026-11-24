@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import PageShell from '../components/PageShell';
 import { viewShare } from '../lib/api';
-import { summarizeItem, summarizeSentence, summarizeSession } from '../lib/progress';
+import { helpWhen, summarizeItem, summarizeSentence, summarizeSession } from '../lib/progress';
 import { parseShareToken } from '../lib/shareLink';
 import { INVALID_SHARE_MESSAGE, wordsToReview, type SharedSession, type SharedView as View } from '../lib/sharedView';
 
@@ -33,7 +33,7 @@ function SessionCard({ session }: { session: SharedSession }) {
           </summary>
           <div className="help" style={{ margin: '8px 0 4px 26px' }}>
             <p><strong>Écrit au 1er essai :</strong> {s.firstAnswer ?? 'aucun'}</p>
-            <p><strong>Essais :</strong> {s.attemptsA} · <strong>Écoutes :</strong> {s.listens}{s.helpUsed ? ' · bonne orthographe montrée' : ''}</p>
+            <p><strong>Essais :</strong> {s.attemptsA} · <strong>Écoutes :</strong> {s.listens}{s.helpUsed ? ` · ${helpWhen(s)}` : ''}</p>
           </div>
         </details>
       ))}

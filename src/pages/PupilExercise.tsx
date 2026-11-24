@@ -187,6 +187,7 @@ export default function PupilExercise() {
         word={item.word}
         stage={current.stage}
         canShowCorrect={opened.options.showCorrect && current.stage === 'A'}
+        finalRound={opened.options.finalRound}
         readAloud={opened.options.readAloud}
         progressLabel={progressLabel}
         speak={rate => playerRef.current!.playWord(item, rate)}

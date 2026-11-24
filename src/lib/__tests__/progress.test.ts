@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { summarizeItem, summarizeSession, nextTask, type ItemSummary } from '../progress';
+import { summarizeItem, summarizeSession, nextTask, helpWhen, helpStats, type ItemSummary } from '../progress';
 import type { AttemptRow, DictaItem, Stage } from '../types';
 
 const items: DictaItem[] = [
@@ -73,7 +73,7 @@ describe('summarizeItem', () => {
 describe('summarizeSession', () => {
   it('compte 9 sur 12 du premier coup et 3 à revoir', () => {
     const mk = (status: ItemSummary['status']): ItemSummary => ({
-      itemId: 'x', word: 'x', status, label: '', firstAnswer: null, attemptsA: 1, listens: 0, helpUsed: false, screenshots: [],
+      itemId: 'x', word: 'x', status, label: '', firstAnswer: null, attemptsA: 1, listens: 0, helpUsed: false, attemptsBeforeHelp: null, screenshots: [],
     });
     const list = [...Array(9).fill(0).map(() => mk('green')), mk('orange'), mk('orange'), mk('red')];
     expect(summarizeSession(list)).toEqual({ total: 12, firstTry: 9, toReview: 3 });
@@ -119,5 +119,34 @@ describe('captures', () => {
       att('i1', 'A', 2, true, { screenshot: 'data:image/jpeg;base64,xx' }),
     ];
     expect(summarizeItem(items[0], rows, true).screenshots).toEqual(['data:image/jpeg;base64,xx']);
+  });
+});
+
+describe('aide : avant ou après des tentatives', () => {
+  const chat = items[0];
+  it('aide demandée avant tout essai : 0 tentative avant', () => {
+    const s = summarizeItem(chat, [help('i1'), att('i1', 'A', 1, true)], true);
+    expect(s.attemptsBeforeHelp).toBe(0);
+    expect(helpWhen(s)).toBe('bonne orthographe montrée avant tout essai');
+  });
+  it('aide demandée après 1 puis 2 tentatives', () => {
+    const one = summarizeItem(chat, [att('i1', 'A', 1, false), help('i1'), att('i1', 'A', 2, true)], true);
+    expect(one.attemptsBeforeHelp).toBe(1);
+    expect(helpWhen(one)).toBe('bonne orthographe montrée après 1 essai');
+    const two = summarizeItem(chat, [att('i1', 'A', 1, false), att('i1', 'A', 2, false), help('i1'), att('i1', 'A', 3, true)], true);
+    expect(helpWhen(two)).toBe('bonne orthographe montrée après 2 essais');
+  });
+  it('sans aide : null et aucune phrase', () => {
+    const s = summarizeItem(chat, [att('i1', 'A', 1, true)], true);
+    expect(s.attemptsBeforeHelp).toBeNull();
+    expect(helpWhen(s)).toBe('');
+  });
+  it('ne compte que les tentatives du même mot et de la même étape', () => {
+    const rows = [att('i2', 'A', 1, false), att('i1', 'C', 1, false), help('i1')];
+    expect(summarizeItem(chat, rows, true).attemptsBeforeHelp).toBe(0);
+  });
+  it('helpStats compte les mots aidés et ceux aidés avant tout essai', () => {
+    const mk = (helpUsed: boolean, n: number | null) => ({ helpUsed, attemptsBeforeHelp: n });
+    expect(helpStats([mk(true, 0), mk(true, 2), mk(false, null), mk(true, 0)])).toEqual({ helped: 3, beforeAnyAttempt: 2 });
   });
 });

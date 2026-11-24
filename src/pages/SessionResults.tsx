@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import PageShell from '../components/PageShell';
 import TeacherNav from '../components/TeacherNav';
 import { getPupilAttempts, getResults, saveComment } from '../lib/api';
-import { summarizeItem, summarizeSentence, summarizeSession, type ItemSummary, type SentenceSummary } from '../lib/progress';
+import { helpStats, helpWhen, summarizeItem, summarizeSentence, summarizeSession, type ItemSummary, type SentenceSummary } from '../lib/progress';
 import { upsertComment } from '../lib/comments';
 import type { AttemptRow } from '../lib/types';
 
@@ -29,7 +29,7 @@ export default function SessionResults() {
     return data.pupils.map(p => {
       const rows = data.attempts.filter(a => a.pupilId === p.id);
       const sums = data.items.map(i => summarizeItem(i, rows, data.options.finalRound));
-      return { pupil: p, ...summarizeSession(sums), started: rows.length > 0 };
+      return { pupil: p, ...summarizeSession(sums), help: helpStats(sums), started: rows.length > 0 };
     });
   }, [data]);
 
@@ -84,7 +84,7 @@ export default function SessionResults() {
               <div key={r.pupil.id} className="flex flex-wrap items-center justify-between gap-2 py-2" style={{ borderBottom: '1px solid var(--border)' }}>
                 <strong>{r.pupil.code}</strong>
                 <span>
-                  {r.started ? `${r.firstTry} sur ${r.total} réussis du premier coup · ${r.toReview} à revoir` : 'Aucune réponse enregistrée'}
+                  {r.started ? `${r.firstTry} sur ${r.total} réussis du premier coup · ${r.toReview} à revoir${r.help.helped > 0 ? ` · bonne orthographe montrée ${r.help.helped} fois (${r.help.beforeAnyAttempt} avant tout essai)` : ''}` : 'Aucune réponse enregistrée'}
                 </span>
                 <button type="button" className="plai-btn-ghost" onClick={() => openPupil(r.pupil.id)}>Ouvrir</button>
               </div>
@@ -111,7 +111,7 @@ export default function SessionResults() {
                       </summary>
                       <div className="help" style={{ margin: '8px 0 4px 26px' }}>
                         <p><strong>Écrit au 1er essai :</strong> {s.firstAnswer ?? 'aucun'}</p>
-                        <p><strong>Essais :</strong> {s.attemptsA} · <strong>Écoutes :</strong> {s.listens}{s.helpUsed ? ' · bonne orthographe montrée' : ''}</p>
+                        <p><strong>Essais :</strong> {s.attemptsA} · <strong>Écoutes :</strong> {s.listens}{s.helpUsed ? ` · ${helpWhen(s)}` : ''}</p>
                         {s.screenshots.map((src, i) => <img key={i} src={src} alt={`Capture de l'erreur ${i + 1} pour ${s.word}`} style={{ maxWidth: 360, border: '1px solid var(--border)', marginTop: 6 }} />)}
                       </div>
                     </details>

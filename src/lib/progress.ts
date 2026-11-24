@@ -12,6 +12,9 @@ export type ItemSummary = {
   attemptsA: number;
   listens: number;
   helpUsed: boolean;
+  // Tentatives faites avant le premier appui sur « Montrer la bonne orthographe » (0 = avant tout essai) ; null sans aide.
+  // Suppose des lignes dans l'ordre chronologique, ce que renvoient les lectures de résultats (tri par date d'enregistrement).
+  attemptsBeforeHelp: number | null;
   screenshots: string[];
 };
 
@@ -23,6 +26,26 @@ const byAttemptNumber = (a: AttemptRow, b: AttemptRow) => a.attemptNumber - b.at
 function isFirstTry(rows: AttemptRow[]): boolean {
   const first = [...attemptsAt(rows, 'A')].sort(byAttemptNumber)[0];
   return !!first && first.correct === true && !rows.some(r => r.kind === 'help');
+}
+
+function attemptsBeforeFirstHelp(rows: AttemptRow[]): number | null {
+  const at = rows.findIndex(r => r.kind === 'help');
+  if (at === -1) return null;
+  const stage = rows[at].stage;
+  return rows.slice(0, at).filter(r => r.kind === 'attempt' && r.stage === stage).length;
+}
+
+// Phrase pour les résultats : quand la bonne orthographe a été montrée, avant tout essai ou après N essais.
+export function helpWhen(s: Pick<ItemSummary, 'helpUsed' | 'attemptsBeforeHelp'>): string {
+  if (!s.helpUsed) return '';
+  const n = s.attemptsBeforeHelp;
+  if (n === null || n === 0) return 'bonne orthographe montrée avant tout essai';
+  return `bonne orthographe montrée après ${n} essai${n > 1 ? 's' : ''}`;
+}
+
+export function helpStats(summaries: Pick<ItemSummary, 'helpUsed' | 'attemptsBeforeHelp'>[]): { helped: number; beforeAnyAttempt: number } {
+  const helped = summaries.filter(s => s.helpUsed);
+  return { helped: helped.length, beforeAnyAttempt: helped.filter(s => !s.attemptsBeforeHelp).length };
 }
 
 export function summarizeItem(item: DictaItem, allRows: AttemptRow[], finalRound: boolean): ItemSummary {
@@ -37,6 +60,7 @@ export function summarizeItem(item: DictaItem, allRows: AttemptRow[], finalRound
     attemptsA: attemptsA.length,
     listens: rows.reduce((sum, r) => sum + (r.listens ?? 0), 0),
     helpUsed,
+    attemptsBeforeHelp: attemptsBeforeFirstHelp(rows),
     screenshots: rows.map(r => r.screenshot).filter((s): s is string => !!s && s.startsWith('data:image/')),
   };
 

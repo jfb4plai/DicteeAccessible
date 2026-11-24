@@ -13,6 +13,7 @@ type Props = {
   letterParasites: { count: number; proximity: LetterProximity };
   stage: Stage;
   canShowCorrect: boolean;
+  finalRound: boolean;
   readAloud: boolean;
   progressLabel: string;
   speak: (rate?: number) => Promise<void>;
@@ -39,6 +40,7 @@ async function captureWordArea(): Promise<string | null> {
 export default function WordExercise(p: Props) {
   const [state, dispatch] = useReducer(exerciseReducer, p.word, w => createExercise(w, Math.random, pickParasiteLetters(w, p.letterParasites.count, p.letterParasites.proximity)));
   const [helpShown, setHelpShown] = useState(false);
+  const [confirmingHelp, setConfirmingHelp] = useState(false);
   const listens = useRef(0);
   const reported = useRef(0);
 
@@ -94,9 +96,6 @@ export default function WordExercise(p: Props) {
         <button type="button" className="plai-btn" onClick={() => listen()}>Écouter le mot</button>
         <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_FASTER)}>Un peu plus vite</button>
         <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(SPEED_SLOWEST)}>Très lentement</button>
-        {p.canShowCorrect && !helpShown && state.phase !== 'right' && (
-          <button type="button" className="plai-btn-ghost" onClick={showCorrect}>Montrer la bonne orthographe</button>
-        )}
       </div>
 
       {helpShown && (
@@ -111,6 +110,24 @@ export default function WordExercise(p: Props) {
         onRetry={() => dispatch({ type: 'retry' })}
         neutral={p.stage === 'C'}
       />
+
+      {p.canShowCorrect && !helpShown && state.phase !== 'right' && (
+        // Zone à part, loin des boutons d'écoute : un appui par erreur est peu probable, et l'élève sait ce que ça entraîne.
+        <div className="mt-8 p-3" style={{ border: '1px dashed var(--border2)', borderRadius: 8 }}>
+          <p className="help mb-2">Besoin d'aide ?</p>
+          {!confirmingHelp ? (
+            <button type="button" className="plai-btn-ghost" onClick={() => setConfirmingHelp(true)}>Montrer la bonne orthographe</button>
+          ) : (
+            <div role="group" aria-label="Confirmer l'aide">
+              <p className="mb-2"><strong>Montrer le mot écrit ?</strong> {p.finalRound ? 'Il reviendra à la fin, sans aide.' : 'Ton enseignant(e) le verra.'}</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className="plai-btn" onClick={() => { setConfirmingHelp(false); showCorrect(); }}>Oui, montrer le mot</button>
+                <button type="button" className="plai-btn-ghost" onClick={() => setConfirmingHelp(false)}>Non, je continue</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {(state.phase === 'right' || (state.phase === 'wrong' && p.stage === 'C')) && (
         <div className="text-center mt-4">
