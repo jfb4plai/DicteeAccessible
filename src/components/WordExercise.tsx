@@ -2,12 +2,14 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import LetterBoard from './LetterBoard';
 import { createExercise, exerciseReducer } from '../lib/letterExercise';
+import { pickParasiteLetters, type LetterProximity } from '../lib/parasiteLetters';
 import type { Stage } from '../lib/types';
 
 export type AttemptResult = { answer: string; correct: boolean; listens: number; screenshot: string | null };
 
 type Props = {
   word: string;
+  letterParasites: { count: number; proximity: LetterProximity };
   stage: Stage;
   canShowCorrect: boolean;
   readAloud: boolean;
@@ -34,7 +36,7 @@ async function captureWordArea(): Promise<string | null> {
 
 // Un mot = un composant. Le parent le remonte (key) à chaque nouveau mot : état et compteurs repartent de zéro.
 export default function WordExercise(p: Props) {
-  const [state, dispatch] = useReducer(exerciseReducer, p.word, createExercise);
+  const [state, dispatch] = useReducer(exerciseReducer, p.word, w => createExercise(w, Math.random, pickParasiteLetters(w, p.letterParasites.count, p.letterParasites.proximity)));
   const [helpShown, setHelpShown] = useState(false);
   const listens = useRef(0);
   const reported = useRef(0);

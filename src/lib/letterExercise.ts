@@ -2,6 +2,7 @@ import { autoPrefilledIndices, buildLetterPool, isCorrectAnswer, wrongPositions 
 
 export type ExerciseState = {
   word: string;
+  extras: string[]; // lettres en trop, gardées d'un essai à l'autre
   pool: string[];
   placed: (string | null)[];
   prefilled: number[];
@@ -20,11 +21,12 @@ function emptyPlaced(word: string, prefilled: number[]): (string | null)[] {
   return word.split('').map((char, i) => (prefilled.includes(i) ? char : null));
 }
 
-export function createExercise(word: string, rng: () => number = Math.random): ExerciseState {
+export function createExercise(word: string, rng: () => number = Math.random, extras: string[] = []): ExerciseState {
   const prefilled = autoPrefilledIndices(word);
   return {
     word,
-    pool: buildLetterPool(word, rng),
+    extras,
+    pool: buildLetterPool(word, rng, extras),
     placed: emptyPlaced(word, prefilled),
     prefilled,
     phase: 'placing',
@@ -71,7 +73,7 @@ export function exerciseReducer(state: ExerciseState, action: ExerciseAction): E
       if (state.phase !== 'wrong') return state;
       return {
         ...state,
-        pool: buildLetterPool(state.word),
+        pool: buildLetterPool(state.word, Math.random, state.extras),
         placed: emptyPlaced(state.word, state.prefilled),
         phase: 'placing',
         wrongIdx: [],

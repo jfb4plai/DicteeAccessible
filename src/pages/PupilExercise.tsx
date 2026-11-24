@@ -182,6 +182,7 @@ export default function PupilExercise() {
     <PageShell>
       {pendingBanner}
       <WordExercise
+        letterParasites={{ count: opened.letterParasiteCount, proximity: opened.letterProximity }}
         key={key}
         word={item.word}
         stage={current.stage}

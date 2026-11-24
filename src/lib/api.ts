@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession, toPupil } from './apiMapping';
 import { clampParasiteCount } from './sentences';
+import { clampLetterCount, parseLetterProximity, type LetterProximity } from './parasiteLetters';
 import { planPupilChanges, type WordPlan } from './editSession';
 import { normalizeClassLabel } from './pupilGroups';
 import { TOKEN_PATTERN } from './shareLink';
@@ -136,6 +137,8 @@ export async function createSession(input: SessionInput): Promise<{ id: string; 
         final_round: input.options.finalRound,
         voice: input.voice,
         parasite_count: input.parasiteCount,
+        letter_parasite_count: clampLetterCount(input.letterParasiteCount ?? 0),
+        letter_proximity: parseLetterProximity(input.letterProximity),
         published: false, // toute dictée naît en brouillon : elle se publie depuis l'onglet « Publier »
       })
       .select('id, access_code')
@@ -256,11 +259,11 @@ export async function generateSentences(input: GenerateInput): Promise<{ sentenc
 }
 
 export async function getSessionForEdit(sessionId: string): Promise<{
-  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; options: SessionOptions; published: boolean; accessCode: string;
+  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; letterParasiteCount: number; letterProximity: LetterProximity; options: SessionOptions; published: boolean; accessCode: string;
   items: DictaItem[]; pupils: Pupil[];
 }> {
   const [session, items, links] = await Promise.all([
-    supabase.from('dicta_sessions').select('title, level, mode, voice, parasite_count, show_correct, read_aloud, final_round, published, access_code').eq('id', sessionId).single(),
+    supabase.from('dicta_sessions').select('title, level, mode, voice, parasite_count, letter_parasite_count, letter_proximity, show_correct, read_aloud, final_round, published, access_code').eq('id', sessionId).single(),
     supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
     supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
   ]);
@@ -271,6 +274,8 @@ export async function getSessionForEdit(sessionId: string): Promise<{
     mode: session.data.mode,
     voice: session.data.voice,
     parasiteCount: clampParasiteCount(session.data.parasite_count ?? 2),
+    letterParasiteCount: clampLetterCount(session.data.letter_parasite_count ?? 0),
+    letterProximity: parseLetterProximity(session.data.letter_proximity),
     options: { showCorrect: session.data.show_correct, readAloud: session.data.read_aloud, finalRound: session.data.final_round },
     published: session.data.published,
     accessCode: session.data.access_code,
@@ -280,7 +285,8 @@ export async function getSessionForEdit(sessionId: string): Promise<{
 }
 
 export type SessionSettings = {
-  title: string; level: SessionInput['level']; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; options: SessionOptions;
+  title: string; level: SessionInput['level']; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number;
+  letterParasiteCount: number; letterProximity: LetterProximity; options: SessionOptions;
 };
 
 // Met à jour seulement les réglages fournis (chaque onglet n'envoie que les siens).
@@ -291,6 +297,8 @@ export async function updateSessionSettings(sessionId: string, s: Partial<Sessio
   if (s.mode !== undefined) patch.mode = s.mode;
   if (s.voice !== undefined) patch.voice = s.voice;
   if (s.parasiteCount !== undefined) patch.parasite_count = clampParasiteCount(s.parasiteCount);
+  if (s.letterParasiteCount !== undefined) patch.letter_parasite_count = clampLetterCount(s.letterParasiteCount);
+  if (s.letterProximity !== undefined) patch.letter_proximity = parseLetterProximity(s.letterProximity);
   if (s.options !== undefined) {
     patch.show_correct = s.options.showCorrect;
     patch.read_aloud = s.options.readAloud;

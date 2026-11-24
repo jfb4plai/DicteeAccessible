@@ -1,4 +1,5 @@
 import { clampParasiteCount } from './sentences';
+import { clampLetterCount, parseLetterProximity } from './parasiteLetters';
 import type { AttemptRow, OpenedSession, Pupil, Stage } from './types';
 
 export function normalizeCode(code: string): string {
@@ -26,6 +27,8 @@ export function toOpenedSession(raw: any): OpenedSession {
     mode: raw.mode,
     voice: raw.voice === 'jef' || raw.voice === 'device' ? raw.voice : 'adrien',
     parasiteCount: clampParasiteCount(raw.parasite_count ?? 2),
+    letterParasiteCount: clampLetterCount(raw.letter_parasite_count ?? 0),
+    letterProximity: parseLetterProximity(raw.letter_proximity),
     options: {
       showCorrect: raw.options.show_correct,
       readAloud: raw.options.read_aloud,

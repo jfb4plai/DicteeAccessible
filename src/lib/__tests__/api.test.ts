@@ -15,6 +15,8 @@ describe('toOpenedSession', () => {
       mode: 'class',
       voice: 'adrien',
       parasiteCount: 2,
+      letterParasiteCount: 0,
+      letterProximity: 'none',
       options: { showCorrect: false, readAloud: true, finalRound: true },
       items: [{ id: 'i1', word: 'chat', position: 0 }],
       sentences: [],
@@ -49,5 +51,7 @@ describe('normalizeCode', () => {
     expect(toOpenedSession({ ...base, parasite_count: 0 }).parasiteCount).toBe(0);
     expect(toOpenedSession({ ...base, parasite_count: 3 }).parasiteCount).toBe(3);
     expect(toOpenedSession(base).parasiteCount).toBe(2);
+    expect(toOpenedSession({ ...base, letter_parasite_count: 3, letter_proximity: 'both' })).toMatchObject({ letterParasiteCount: 3, letterProximity: 'both' });
+    expect(toOpenedSession({ ...base, letter_parasite_count: 9, letter_proximity: 'zzz' })).toMatchObject({ letterParasiteCount: 3, letterProximity: 'none' });
   });
 });

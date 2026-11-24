@@ -18,9 +18,10 @@ export function autoPrefilledIndices(word: string): number[] {
   return indices;
 }
 
-export function buildLetterPool(word: string, rng: () => number = Math.random): string[] {
+// extras : lettres en trop (parasites) mêlées aux lettres du mot ; elles ne servent pas à écrire le mot.
+export function buildLetterPool(word: string, rng: () => number = Math.random, extras: string[] = []): string[] {
   const letters = word.split('').filter(char => !PREFILLED_CHARS.includes(char));
-  return shuffleArray(letters, rng);
+  return shuffleArray([...letters, ...extras], rng);
 }
 
 export function wrongPositions(placed: (string | null)[], expected: string): number[] {

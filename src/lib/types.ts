@@ -1,3 +1,4 @@
+import type { LetterProximity } from './parasiteLetters';
 export type Voice = 'adrien' | 'jef' | 'device';
 
 export type Stage = 'A' | 'B1' | 'B2' | 'C';
@@ -25,6 +26,8 @@ export type OpenedSession = {
   mode: 'autonomy' | 'class';
   voice: Voice;
   parasiteCount: number;
+  letterParasiteCount: number;
+  letterProximity: LetterProximity;
   options: SessionOptions;
   items: DictaItem[];
   sentences: DictaSentence[];
@@ -43,6 +46,8 @@ export type SessionInput = {
   contents: Contents;
   voice: Voice;
   parasiteCount: number;
+  letterParasiteCount?: number;
+  letterProximity?: LetterProximity;
   pupilIds: string[];
   options: SessionOptions;
 };

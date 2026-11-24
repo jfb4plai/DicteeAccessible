@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { updateSessionSettings } from '../../lib/api';
+import type { LetterProximity } from '../../lib/parasiteLetters';
 import type { SessionOptions, Voice } from '../../lib/types';
 import { SaveBar, TabIntro, type TabProps } from './common';
 
@@ -19,6 +20,8 @@ export default function SettingsTab({ id, data, reload, goNext, setDirty }: TabP
   const [mode, setMode] = useState<'autonomy' | 'class'>(s.mode);
   const [voice, setVoice] = useState<Voice>(s.voice);
   const [parasiteCount, setParasiteCount] = useState(s.parasiteCount);
+  const [letterCount, setLetterCount] = useState(s.letterParasiteCount);
+  const [letterProximity, setLetterProximity] = useState<LetterProximity>(s.letterProximity);
   const [options, setOptions] = useState<SessionOptions>(s.options);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -28,7 +31,7 @@ export default function SettingsTab({ id, data, reload, goNext, setDirty }: TabP
     setError('');
     setBusy(true);
     try {
-      await updateSessionSettings(id, { mode, voice, parasiteCount, options });
+      await updateSessionSettings(id, { mode, voice, parasiteCount, letterParasiteCount: letterCount, letterProximity, options });
       await reload();
       setDirty(false);
       goNext();
@@ -60,6 +63,26 @@ export default function SettingsTab({ id, data, reload, goNext, setDirty }: TabP
           <option value="device">Voix de l'appareil</option>
         </select>
         <p className="help">Adrien lit « nonante » et « septante » comme en Belgique. La voix de l'appareil ne demande aucun service en ligne, mais sa prononciation dépend de l'appareil.</p>
+      </div>
+      <div className="plai-field">
+        <label className="plai-label" htmlFor="letters">Lettres parasites par mot (dictée de mots)</label>
+        <select id="letters" className="plai-input" value={letterCount} onChange={e => { setLetterCount(Number(e.target.value)); touch(); }}>
+          <option value={0}>0 : seulement les lettres du mot</option>
+          <option value={1}>1 lettre en trop</option>
+          <option value={2}>2 lettres en trop</option>
+          <option value={3}>3 lettres en trop</option>
+        </select>
+        <p className="help">Lettres en trop mêlées aux tuiles quand l'élève écrit un mot lettre par lettre. Elles ne sont jamais des lettres du mot et restent dans le réservoir une fois le mot écrit. Sans effet sur les phrases.</p>
+      </div>
+      <div className="plai-field">
+        <label className="plai-label" htmlFor="letter-prox">Lettres parasites proches (facultatif)</label>
+        <select id="letter-prox" className="plai-input" value={letterProximity} disabled={letterCount === 0} onChange={e => { setLetterProximity(e.target.value as LetterProximity); touch(); }}>
+          <option value="none">Sans consigne : lettres au hasard</option>
+          <option value="phonetic">Proches par le son (c, k, q, s ; t, d ; é, è, e)</option>
+          <option value="spelling">Proches par la forme (b, d, p, q ; m, n, u)</option>
+          <option value="both">Proches par le son et par la forme</option>
+        </select>
+        <p className="help">Le choix se fait avec des tables de lettres du programme, pas avec l'IA : le résultat est toujours le même type de confusion. Si les lettres proches sont déjà dans le mot, le programme complète avec d'autres lettres.</p>
       </div>
       <div className="plai-field">
         <label className="plai-label" htmlFor="parasites">Mots parasites par phrase</label>
