@@ -66,4 +66,30 @@ describe('createSaveQueue mémorisée', () => {
     expect(sent).toEqual(['a', 'b']);
     expect(stored).toEqual([]);
   });
+
+  it("signale un échec d'envoi sans le signaler pour un envoi réussi", async () => {
+    let calls = 0;
+    const failures: number[] = [];
+    const changes: number[] = [];
+    const scheduled: (() => void)[] = [];
+    const q = createSaveQueue<string>({
+      send: async () => { calls++; if (calls === 1) throw new Error('réseau'); },
+      schedule: fn => { scheduled.push(fn); },
+      onChange: n => changes.push(n),
+      onFailure: n => failures.push(n),
+    });
+    q.enqueue('a');
+    await tick();
+    expect(failures).toEqual([1]); // échec : le bandeau peut s'afficher
+    scheduled.shift()!();
+    await tick();
+    expect(changes).toEqual([1, 0]); // succès : file vidée, le bandeau disparaît
+    expect(failures).toEqual([1]);
+
+    const ok: number[] = [];
+    const calm = createSaveQueue<string>({ send: async () => {}, schedule: () => {}, onFailure: n => ok.push(n) });
+    calm.enqueue('b');
+    await tick();
+    expect(ok).toEqual([]); // envoi normal : aucun échec signalé
+  });
 });

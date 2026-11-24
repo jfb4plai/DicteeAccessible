@@ -8,6 +8,8 @@ export function createSaveQueue<T>(opts: {
   schedule?: (fn: () => void, ms: number) => void;
   retryMs?: number;
   onChange?: (pending: number) => void;
+  // Un envoi a échoué (réseau coupé, serveur indisponible…) : la file réessaiera. onChange est rappelé à chaque succès.
+  onFailure?: (pending: number) => void;
   // Mémorisation de la file (ex. localStorage) pour survivre à la fermeture de l'onglet.
   storage?: { load: () => T[]; save: (jobs: T[]) => void };
 }): SaveQueue<T> {
@@ -31,6 +33,7 @@ export function createSaveQueue<T>(opts: {
         opts.onChange?.(jobs.length);
       } catch {
         running = false;
+        opts.onFailure?.(jobs.length);
         schedule(pump, retryMs);
         return;
       }

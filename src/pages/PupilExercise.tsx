@@ -35,6 +35,7 @@ export default function PupilExercise() {
   const [current, setCurrent] = useState<Step | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(0);
+  const [saveFailing, setSaveFailing] = useState(false); // un envoi a échoué et la file réessaie
   const rowsRef = useRef<AttemptRow[]>([]);
   const queueRef = useRef<ReturnType<typeof createSaveQueue<Job>> | null>(null);
   const playerRef = useRef<Player | null>(null);
@@ -58,7 +59,8 @@ export default function PupilExercise() {
             }
             return recordAttempt({ accessCode, pupilCode, itemId: job.itemId, stage: job.stage, answer: job.answer, listens: job.listens, screenshot: job.screenshot }).then(() => undefined);
           },
-          onChange: setPending,
+          onChange: n => { setPending(n); setSaveFailing(false); },
+          onFailure: () => setSaveFailing(true),
           storage,
         });
         rowsRef.current = rows;
@@ -130,8 +132,9 @@ export default function PupilExercise() {
   }
   if (!opened) return <PageShell><p className="help">Chargement de la dictée…</p></PageShell>;
 
-  const pendingBanner = pending > 0 && (
-    <p className="plai-error" role="status">Enregistrement en attente. Garder cette page ouverte.</p>
+  // Le bandeau n'apparaît qu'après un vrai échec d'envoi : un envoi normal (quelques instants) n'affiche rien.
+  const pendingBanner = pending > 0 && saveFailing && (
+    <p className="plai-error" role="status">Enregistrement en attente : connexion ou serveur indisponible. Garder cette page ouverte, l'envoi est réessayé tout seul.</p>
   );
 
   if (!current) {
