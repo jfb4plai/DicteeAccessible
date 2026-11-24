@@ -50,6 +50,7 @@ export default function SessionSentences() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [published, setPublished] = useState(false);
+  const [reopened, setReopened] = useState(false); // dictée publiée dont on rouvre les phrases
   const [others, setOthers] = useState<SessionListItem[]>([]);
   const [fromId, setFromId] = useState('');
   const [savedSentences, setSavedSentences] = useState<{ id: string; text: string; parasites: string[] }[]>([]);
@@ -159,6 +160,7 @@ export default function SessionSentences() {
       setSavedSentences(await listSentences(id)); // la page publiée montre les phrases enregistrées
       void warmSession(id); // audio prêt avant l'arrivée de la classe
       setPublished(true);
+      setReopened(false);
     } catch (e) { setError((e as Error).message); }
     setBusy(false);
   }
@@ -167,7 +169,7 @@ export default function SessionSentences() {
     return <PageShell actions={<TeacherNav />}>{error ? <p className="plai-error">{error}</p> : <p className="help">Chargement…</p>}</PageShell>;
   }
 
-  if (published) {
+  if (published && !reopened) {
     return (
       <PageShell wide actions={<TeacherNav />}>
         <h1 className="text-3xl mb-2">Dictée publiée</h1>
@@ -182,7 +184,11 @@ export default function SessionSentences() {
             <p className="help">Parasites : {x.parasites.length > 0 ? x.parasites.join(', ') : 'aucun'}</p>
           </div>
         ))}
-        <p className="mt-4"><Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link></p>
+        <p className="mt-4 flex flex-wrap gap-2">
+          <Link to={`/enseignant/session/${id}/modifier`} className="plai-btn inline-block no-underline">Modifier la dictée</Link>
+          <button type="button" className="plai-btn-ghost" onClick={() => setReopened(true)}>Modifier les phrases</button>
+          <Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link>
+        </p>
       </PageShell>
     );
   }
@@ -191,6 +197,11 @@ export default function SessionSentences() {
     <PageShell wide actions={<TeacherNav />}>
       <p><Link to="/enseignant">← Mes dictées</Link></p>
       <h1 className="text-3xl my-3">Phrases de « {session.title} »</h1>
+      {published && (
+        <p className="plai-banner" role="note">
+          Cette dictée est publiée. Une dictée générée n'a pas forcément été partagée, mais si elle l'est, les élèves voient chaque phrase validée dès qu'elle est enregistrée. Une phrase supprimée emporte ses résultats.
+        </p>
+      )}
       <p className="help mb-4">
         {session.mode === 'class'
           ? 'Dictée en classe : chaque phrase est dictée une seule fois, sans indication de l\'endroit des erreurs.'
@@ -295,8 +306,8 @@ export default function SessionSentences() {
       {error && <p className="plai-error">{error}</p>}
       {info && <p className="plai-success" role="status">{info}</p>}
       <div className="flex flex-wrap gap-3 items-center mt-3">
-        <button type="button" className="plai-btn-ghost" disabled={busy} onClick={saveDraft}>Enregistrer le brouillon</button>
-        <button type="button" className="plai-btn" disabled={busy || !allValidated} onClick={publish}>Publier la dictée</button>
+        <button type="button" className="plai-btn-ghost" disabled={busy} onClick={saveDraft}>{published ? 'Enregistrer' : 'Enregistrer le brouillon'}</button>
+        <button type="button" className="plai-btn" disabled={busy || !allValidated} onClick={publish}>{published ? 'Enregistrer et terminer' : 'Publier la dictée'}</button>
       </div>
       <p className="help mt-2">
         {rows.length === 0 ? 'Ajoute au moins une phrase pour publier.' : unvalidated > 0 ? `Rien n'est publié tant que tu n'as pas validé chaque phrase (${unvalidated} à valider).` : 'Toutes les phrases sont validées.'}

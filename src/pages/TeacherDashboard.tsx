@@ -33,6 +33,7 @@ export default function TeacherDashboard() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link to={`/enseignant/session/${s.id}/modifier`} className="plai-btn-ghost no-underline inline-flex items-center">Modifier</Link>
             {s.published ? (
               <>
                 <Link to={`/enseignant/session/${s.id}/phrases`} className="plai-btn-ghost no-underline inline-flex items-center">Phrases et liens</Link>

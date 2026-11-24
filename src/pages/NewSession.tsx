@@ -35,7 +35,7 @@ export default function NewSession() {
   const [duplicates, setDuplicates] = useState<string[]>([]);
   const [failure, setFailure] = useState('');
   const [busy, setBusy] = useState(false);
-  const [created, setCreated] = useState<{ accessCode: string; pupils: Pupil[] } | null>(null);
+  const [created, setCreated] = useState<{ id: string; accessCode: string; pupils: Pupil[] } | null>(null);
 
   useEffect(() => {
     listPupils()
@@ -96,7 +96,7 @@ export default function NewSession() {
       }
       clearDraft();
       void warmSession(id); // audio prêt avant l'arrivée de la classe
-      setCreated({ accessCode, pupils: (pupils ?? []).filter(p => pupilIds.includes(p.id)) });
+      setCreated({ id, accessCode, pupils: (pupils ?? []).filter(p => pupilIds.includes(p.id)) });
     } catch (err) {
       setFailure((err as Error).message);
     }
@@ -110,7 +110,10 @@ export default function NewSession() {
         <p className="plai-success">Code de la dictée : <strong style={{ fontSize: 24 }}>{created.accessCode}</strong></p>
         <p className="help mb-4">Donner à chaque élève son lien ou son QR code. Le lien contient seulement le code de la dictée et le code de l'élève, jamais un prénom.</p>
         <PupilLinks accessCode={created.accessCode} pupils={created.pupils} />
-        <p className="mt-4"><Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link></p>
+        <p className="mt-4 flex flex-wrap gap-2">
+          <Link to={`/enseignant/session/${created.id}/modifier`} className="plai-btn inline-block no-underline">Modifier la dictée</Link>
+          <Link to="/enseignant" className="plai-btn-ghost inline-block no-underline">Retour à mes dictées</Link>
+        </p>
       </PageShell>
     );
   }

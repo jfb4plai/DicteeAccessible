@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { generateAccessCode } from './codes';
 import { normalizeCode, toAttemptRow, toOpenedSession, toPupil } from './apiMapping';
 import { clampParasiteCount } from './sentences';
+import { planPupilChanges, type WordPlan } from './editSession';
 import { normalizeClassLabel } from './pupilGroups';
 import { TOKEN_PATTERN } from './shareLink';
 import { INVALID_SHARE_MESSAGE, shareErrorMessage, toSharedView, type SharedView } from './sharedView';
@@ -253,11 +254,11 @@ export async function generateSentences(input: GenerateInput): Promise<{ sentenc
 }
 
 export async function getSessionForEdit(sessionId: string): Promise<{
-  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; published: boolean; accessCode: string;
+  title: string; level: string; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; options: SessionOptions; published: boolean; accessCode: string;
   items: DictaItem[]; pupils: Pupil[];
 }> {
   const [session, items, links] = await Promise.all([
-    supabase.from('dicta_sessions').select('title, level, mode, voice, parasite_count, published, access_code').eq('id', sessionId).single(),
+    supabase.from('dicta_sessions').select('title, level, mode, voice, parasite_count, show_correct, read_aloud, final_round, published, access_code').eq('id', sessionId).single(),
     supabase.from('dicta_items').select('id, word, position').eq('session_id', sessionId).order('position'),
     supabase.from('dicta_session_pupils').select('dicta_pupils(id, code)').eq('session_id', sessionId),
   ]);
@@ -268,11 +269,63 @@ export async function getSessionForEdit(sessionId: string): Promise<{
     mode: session.data.mode,
     voice: session.data.voice,
     parasiteCount: clampParasiteCount(session.data.parasite_count ?? 2),
+    options: { showCorrect: session.data.show_correct, readAloud: session.data.read_aloud, finalRound: session.data.final_round },
     published: session.data.published,
     accessCode: session.data.access_code,
     items: items.data as DictaItem[],
     pupils: (links.data as any[]).map(l => l.dicta_pupils as Pupil).sort(byCodeNumber),
   };
+}
+
+export type SessionSettings = {
+  title: string; level: SessionInput['level']; mode: 'autonomy' | 'class'; voice: Voice; parasiteCount: number; options: SessionOptions;
+};
+
+export async function updateSessionSettings(sessionId: string, s: SessionSettings): Promise<void> {
+  const { error } = await supabase.from('dicta_sessions').update({
+    title: s.title, level: s.level, mode: s.mode, voice: s.voice,
+    parasite_count: clampParasiteCount(s.parasiteCount),
+    show_correct: s.options.showCorrect, read_aloud: s.options.readAloud, final_round: s.options.finalRound,
+  }).eq('id', sessionId);
+  if (error) fail('Réglages non enregistrés.');
+}
+
+// Nombre de réponses d'élèves enregistrées (toute la dictée, ou un seul mot).
+export async function countAttempts(sessionId: string, itemId?: string): Promise<number> {
+  let query = supabase.from('dicta_attempts').select('id', { count: 'exact', head: true }).eq('session_id', sessionId);
+  if (itemId) query = query.eq('item_id', itemId);
+  const { count, error } = await query;
+  if (error) fail('Comptage des réponses impossible.');
+  return count ?? 0;
+}
+
+export async function saveItems(sessionId: string, plan: WordPlan): Promise<void> {
+  const existing = plan.upserts.filter(u => u.id).map(u => ({ ...u, session_id: sessionId }));
+  const added = plan.upserts.filter(u => !u.id).map(u => ({ word: u.word, position: u.position, session_id: sessionId }));
+  if (existing.length > 0) {
+    const { error } = await supabase.from('dicta_items').upsert(existing);
+    if (error) fail('Mots non enregistrés.');
+  }
+  if (added.length > 0) {
+    const { error } = await supabase.from('dicta_items').insert(added);
+    if (error) fail('Mots non enregistrés.');
+  }
+  if (plan.removedIds.length > 0) {
+    const { error } = await supabase.from('dicta_items').delete().in('id', plan.removedIds).eq('session_id', sessionId);
+    if (error) fail('Mots non enregistrés.');
+  }
+}
+
+export async function setSessionPupils(sessionId: string, current: string[], wanted: string[]): Promise<void> {
+  const { add, remove } = planPupilChanges(current, wanted);
+  if (add.length > 0) {
+    const { error } = await supabase.from('dicta_session_pupils').insert(add.map(pupil_id => ({ session_id: sessionId, pupil_id })));
+    if (error) fail('Élèves non enregistrés.');
+  }
+  if (remove.length > 0) {
+    const { error } = await supabase.from('dicta_session_pupils').delete().eq('session_id', sessionId).in('pupil_id', remove);
+    if (error) fail('Élèves non enregistrés.');
+  }
 }
 
 export async function setParasiteCount(sessionId: string, count: number): Promise<void> {
