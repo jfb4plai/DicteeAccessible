@@ -12,7 +12,7 @@ type Props = {
   mode: 'autonomy' | 'class';
   readAloud: boolean;
   progressLabel: string;
-  speak: () => Promise<void>;
+  speak: (rate?: number) => Promise<void>;
   onAttempt: (r: SentenceAttemptResult) => void;
   onNext: () => void;
 };
@@ -56,9 +56,9 @@ export default function SentenceExercise(p: Props) {
     }
   }, [state.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function listen() {
+  function listen(rate = 1) {
     listens.current += 1;
-    void p.speak();
+    void p.speak(rate);
   }
 
   const locked = state.phase === 'right' || state.phase === 'wrong';
@@ -77,7 +77,9 @@ export default function SentenceExercise(p: Props) {
         : <p className="mb-3" style={{ background: '#e5e7eb', borderRadius: 8, padding: 14, textAlign: 'center', fontSize: 20 }}>Phrase cachée. Écouter la phrase si besoin.</p>}
 
       <div className="mb-4">
-        <button type="button" className="plai-btn" onClick={listen}>Écouter la phrase</button>
+        <button type="button" className="plai-btn" onClick={() => listen()}>Écouter la phrase</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.75)}>Plus lentement</button>
+        <button type="button" className="plai-btn-ghost ml-2" onClick={() => listen(0.5)}>Très lentement</button>
       </div>
 
       <div className="flex flex-wrap justify-center gap-2 p-4 bg-white rounded-lg" aria-label="Phrase à construire">

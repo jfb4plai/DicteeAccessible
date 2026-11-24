@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const speak = vi.fn(async (_text: string) => {});
+const speak = vi.fn(async (_text: string, _rate?: number) => {});
 const cancel = vi.fn();
-vi.mock('../speech', () => ({ speechService: { speak: (t: string) => speak(t), cancel: () => cancel() } }));
+vi.mock('../speech', () => ({ speechService: { speak: (t: string, r?: number) => speak(t, r), cancel: () => cancel() } }));
 
 import { createPlayer } from '../audio';
 
@@ -15,6 +15,8 @@ class FakeAudio {
   private rejectPlay: ((e: unknown) => void) | null = null;
   constructor(public src: string) { FakeAudio.instances.push(this); }
   play() { return new Promise<void>((_res, rej) => { this.rejectPlay = rej; }); }
+  playbackRate = 1;
+  preservesPitch = false;
   pause() { this.paused = true; this.rejectPlay?.(new DOMException('interrompu', 'AbortError')); }
 }
 
@@ -29,7 +31,7 @@ describe('createPlayer', () => {
     const player = createPlayer({ accessCode: 'ABCDEF', voice: 'device' });
     await player.playWord(item('i1', '90'));
     expect(FakeAudio.instances).toHaveLength(0);
-    expect(speak).toHaveBeenCalledWith('nonante');
+    expect(speak).toHaveBeenCalledWith('nonante', 0.9);
   });
 
   it('repli sur la voix de l\'appareil, avec le texte converti, quand l\'audio échoue', async () => {
@@ -38,7 +40,7 @@ describe('createPlayer', () => {
     await tick();
     FakeAudio.instances[0].onerror?.();
     await done;
-    expect(speak).toHaveBeenCalledWith('Il a nonante ans.');
+    expect(speak).toHaveBeenCalledWith('Il a nonante ans.', 0.9);
   });
 
   it('demande l\'audio avec une URL canonique (code en majuscules, identifiants seulement)', async () => {
@@ -61,5 +63,26 @@ describe('createPlayer', () => {
     FakeAudio.instances[1].onended?.();
     await second;
     expect(speak).not.toHaveBeenCalled();
+  });
+
+  it('phrase plus lente : playbackRate 0.75 puis 0.5 sur l\'audio, hauteur conservée', async () => {
+    const player = createPlayer({ accessCode: 'ABCDEF', voice: 'adrien' });
+    const s = { id: 's1', position: 0, text: 'Il a 90 ans.', parasites: [], itemId: null };
+    void player.playSentence(s, 0.75);
+    await tick();
+    expect(FakeAudio.instances[0].playbackRate).toBe(0.75);
+    expect(FakeAudio.instances[0].preservesPitch).toBe(true);
+    void player.playSentence(s, 0.5);
+    await tick();
+    expect(FakeAudio.instances[1].playbackRate).toBe(0.5);
+    void player.playSentence(s);
+    await tick();
+    expect(FakeAudio.instances[2].playbackRate).toBe(1);
+  });
+
+  it('voix de l\'appareil : la vitesse multiplie la vitesse habituelle', async () => {
+    const player = createPlayer({ accessCode: 'ABCDEF', voice: 'device' });
+    await player.playSentence({ id: 's1', position: 0, text: 'Le chat dort.', parasites: [], itemId: null }, 0.5);
+    expect(speak).toHaveBeenCalledWith('Le chat dort.', 0.45);
   });
 });
